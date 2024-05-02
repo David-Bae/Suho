@@ -1,10 +1,10 @@
 from flask import Blueprint, render_template
 
-crud = Blueprint(
-    "crud",
+auth = Blueprint(
+    "auth",
     __name__
 )
 
-@crud.route("/")
+@auth.route("/")
 def index():
-    return "Hello, CRUD!"
+    return "Hello, Auth!"
