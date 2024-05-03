@@ -15,6 +15,13 @@ auth = Blueprint(
 def index():
     return "Hello, Auth!"
 
+#! 전화번호 인증 API.
+@auth.route("/phone-verification", methods=['GET'])
+def phone_verification():
+    return "전화번호 인증입니다."
+
+
+#! 전화번호가 인증되야 회원가입을 할 수 있음.
 @auth.route("/sign-up", methods=['POST'])
 def sign_up():
     new_user = request.json
