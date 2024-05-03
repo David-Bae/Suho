@@ -1,24 +1,13 @@
 from datetime import datetime
 
 from apps.app import db
-from werkzeug.security import generate_password_hash
+#from werkzeug.security import generate_password_hash
 
 class User(db.Model):
     __tablename__ = "users"
 
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(30), index=True)
-    email = db.Column(db.String(30), unique=True, index=True)
-    password_hash = db.Column(db.String(100))
-    created_at = db.Column(db.DateTime, default=datetime.now)
-    updated_ap = db.Column(
-        db.DateTime, default=datetime.now, onupdate=datetime.now
-    )
-
-    @property
-    def password(self):
-        raise AttributeError("읽어 들일 수 없음")
-
-    @password.setter
-    def password(self, password):
-        self.password_hash = generate_password_hash(password)
+    id = db.Column(db.Integer, primary_key=True) # Auto increment는 기본 설정
+    name = db.Column(db.String(32), index=True)
+    password_hash = db.Column(db.String(255))
+    phone = db.Column(db.String(32), unique=True)
+    birthdate = db.Column(db.Date, nullable=True)
