@@ -32,6 +32,5 @@ def create_app():
     from apps.auth import views as auth_views
     app.register_blueprint(auth_views.auth, url_prefix="/auth")
 
-
     return app
 
