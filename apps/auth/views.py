@@ -6,6 +6,7 @@ import bcrypt
 from datetime import date
 from apps.app import db
 from apps.utils import utils
+import random
 
 auth = Blueprint(
     "auth",
@@ -37,6 +38,8 @@ def phone_verification():
         return "이미 등록된 전화번호입니다."
 
     #! 전화번호 인증 API
+    verification_code = str(random.randint(100000, 999999))
+    utils.send_verification_sms(phone, verification_code)
 
     return phone
 
