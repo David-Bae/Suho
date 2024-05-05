@@ -4,6 +4,7 @@ from datetime import date, datetime, timedelta
 from apps.app import db
 from apps.utils import utils
 import random
+import bcrypt
 
 auth = Blueprint(
     "auth",
@@ -92,10 +93,13 @@ def sign_up():
     if not verified_record:
         return jsonify({'error': '전화번호가 인증되지 않았습니다. 다시 인증 절차를 진행해 주세요.'}), 400
 
-
     name = new_user['name']
     birthdate = date(new_user['year'], new_user['month'], new_user['day'])
-    password_hash = utils.hashing_password(new_user['password']) # 비밀번호 암호화
+
+    # 비밀번호 암호화
+    password_hash = bcrypt.hashpw(
+        new_user['password'].encode('utf-8'), bcrypt.gensalt()
+    ).decode('utf-8')
     
     user = User(name=name, password_hash=password_hash,
                 phone=phone, birthdate=birthdate)
@@ -104,3 +108,24 @@ def sign_up():
     db.session.commit()   
 
     return jsonify({'message': '회원가입이 완료되었습니다.'}), 200
+
+
+#! 로그인 엔드포인트.
+@auth.route("/login", methods=['POST'])
+def login():
+    if not request.json or 'phone' not in request.json or 'password' not in request.json:
+        return jsonify({'error': '전화번호와 비밀번호를 모두 입력해주세요.'}), 400
+
+    login_data = request.json
+    phone = login_data['phone']
+    password = login_data['password']
+
+    user = User.query.filter_by(phone=phone).first()
+
+    if user is None:
+        return jsonify({'error': '해당 사용자가 존재하지 않습니다.'}), 404
+
+    if not bcrypt.checkpw(password.encode('UTF-8'), user.password_hash.encode('utf-8')):
+        return jsonify({'error': '비밀번호가 틀렸습니다.'}), 401
+    
+    return jsonify({'message': '로그인 성공!'}), 200

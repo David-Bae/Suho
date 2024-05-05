@@ -19,7 +19,7 @@ class Verification(db.Model):
     인증코드가 발송된 후 5분 뒤에 만료도록 구현.
     """
     id = db.Column(db.Integer, primary_key=True)
-    phone = db.Column(db.String(15), unique=True, nullable=False)
+    phone = db.Column(db.String(15), nullable=False)
     code = db.Column(db.String(6), nullable=False)
     expiration_time = db.Column(db.DateTime, nullable=False)  # 인증 코드 만료 시간
     verified = db.Column(db.Boolean, default=False, nullable=False)  # 인증 성공 여부

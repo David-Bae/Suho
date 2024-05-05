@@ -15,7 +15,12 @@ import bcrypt
 def hashing_password(password):
     password_bytes = password.encode('utf-8')
     password_hash = bcrypt.hashpw(password_bytes, bcrypt.gensalt())
-    return password_hash #.decode('utf-8')
+    return password_hash.decode()
+
+def check_password(password, db_password):
+    password = hashing_password(password)
+    db_password = db_password.encode('utf-8')
+    return bcrypt.checkpw(password, db_password)
 
 
 # 회원가입시 인증 코드를 보내는 함수.
