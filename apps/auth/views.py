@@ -1,9 +1,6 @@
 from flask import Blueprint, render_template, request, jsonify
-
-#Test용
-from apps.crud.models import User
-import bcrypt
-from datetime import date
+from apps.crud.models import User, Verification
+from datetime import date, datetime, timedelta
 from apps.app import db
 from apps.utils import utils
 import random
@@ -37,26 +34,68 @@ def phone_verification():
     if User.query.filter_by(phone=phone).first() is not None:
         return "이미 등록된 전화번호입니다."
 
-    #! 전화번호 인증 API
+    #! 전화번호 인증
+    # 인증코드 생성
     verification_code = str(random.randint(100000, 999999))
-    utils.send_verification_sms(phone, verification_code)
 
-    return phone
+    #! 병렬처리.
+    # 전화번호로 인증코드 발송
+    utils.send_verification_sms(phone, verification_code)
+    # DB에 전화번호, 인증코드 저장
+    verification = Verification(phone=phone, code=verification_code)
+    db.session.add(verification)
+    db.session.commit()
+    
+    return jsonify({'message': '인증코드가 성공적으로 발송되었습니다. 입력하신 전화번호로 전송된 인증코드를 입력해 주세요.'}), 200
+
+@auth.route("/verify-code", methods=['POST'])
+def verify_code():
+    if not request.json or 'phone' not in request.json or 'code' not in request.json:
+        return jsonify({'error': 'Bad request'}), 400
+
+    code = request.json['code']
+    phone = request.json['phone']
+    if len(phone) == 11:
+        phone = f"{phone[:3]}-{phone[3:7]}-{phone[7:]}"
+
+    # Verification 테이블에서 가장 최근 인증 정보를 가져온다
+    verification = Verification.query.filter_by(phone=phone).order_by(Verification.expiration_time.desc()).first()
+
+    if verification is None or verification.code != code or verification.expiration_time < datetime.utcnow():
+        return jsonify({'error': '유효하지 않거나 만료된 코드입니다'}), 400
+    
+    # 인증 성공 시 verified 컬럼 업데이트
+    if not verification.verified:
+        verification.verified = True
+        db.session.commit()
+
+    return jsonify({'message': '전화번호 인증에 성공했습니다.'})
 
 
 #! 전화번호가 인증되야 회원가입을 할 수 있음.
 @auth.route("/sign-up", methods=['POST'])
 def sign_up():
     new_user = request.json
-    name = new_user['name']
+
+    # 전화번호가 인증되었는지 확인
     phone = new_user['phone']
-    birthdate = date(new_user['year'], new_user['month'], new_user['date'])
-    password_hash = utils.hashing_password(new_user['password'])
-    # 비밀번호 암호화.
-    password_hash = bcrypt.hashpw(
-        new_user['password'].encode('UTF-8'),
-        bcrypt.gensalt()
-    )
+    one_hour_ago = datetime.utcnow() - timedelta(hours=1)
+
+    # 해당 전화번호로 인증된 최근 1시간 내의 레코드를 조회
+    verified_record = Verification.query.filter(
+        Verification.phone == phone,
+        Verification.verified == True,
+        Verification.expiration_time >= one_hour_ago
+    ).first()
+
+    # 인증된 레코드가 없는 경우 에러 메시지 반환
+    if not verified_record:
+        return jsonify({'error': '전화번호가 인증되지 않았습니다. 다시 인증 절차를 진행해 주세요.'}), 400
+
+
+    name = new_user['name']
+    birthdate = date(new_user['year'], new_user['month'], new_user['day'])
+    password_hash = utils.hashing_password(new_user['password']) # 비밀번호 암호화
     
     user = User(name=name, password_hash=password_hash,
                 phone=phone, birthdate=birthdate)
@@ -64,4 +103,4 @@ def sign_up():
     db.session.add(user)
     db.session.commit()   
 
-    return "회원가입이 완료되었습니다."
+    return jsonify({'message': '회원가입이 완료되었습니다.'}), 200
