@@ -6,6 +6,9 @@ import bcrypt
 from datetime import date
 from apps.app import db
 
+# 전화 번호 형식 검증
+from apps.utils import utils
+
 auth = Blueprint(
     "auth",
     __name__
@@ -16,9 +19,18 @@ def index():
     return "Hello, Auth!"
 
 #! 전화번호 인증 API.
-@auth.route("/phone-verification", methods=['GET'])
+@auth.route("/phone-verification", methods=['POST'])
 def phone_verification():
-    return "전화번호 인증입니다."
+    if not request.json or 'phone' not in request.json:
+        return jsonify({'error': 'Bad request'}), 400
+
+    phone = request.json['phone']
+
+    # 전화번호 유효성 검사.
+    if utils.validate_phone_number(phone):
+        return "유효한 전화 번호입니다."
+    else:
+        return "유효하지 않는 전화번호입니다."
 
 
 #! 전화번호가 인증되야 회원가입을 할 수 있음.
