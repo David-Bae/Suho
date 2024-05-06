@@ -36,3 +36,11 @@ def send_verification_sms(phone, code):
 
     cool = Message(COOLSMS_KEY, COOLSMS_SECRET)
     cool.send(params)
+
+# 고령자-보호자 계정 연동에 필요한 연동 코드 생성
+import string, random
+
+def create_connection_code():
+    characters = string.ascii_letters + string.digits
+    code = ''.join(random.choice(characters) for _ in range(15))
+    return code

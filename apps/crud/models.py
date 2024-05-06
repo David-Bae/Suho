@@ -64,6 +64,24 @@ class CareRelationship(db.Model):
         self.guardian_to_elder_relation = guardian_to_elder_relation
 
 
+class ConnectionCode(db.Model):
+    """
+    보호자가 생성하는 '고령자-보호자 연동 코드'
+    연동 코드는 보호자 계정으로 생성할 수 있으며,
+    연동이 완료되면 연동 코드는 삭제된다. 
+    """
+    id = db.Column(db.Integer, primary_key=True)
+    guardian_id = db.Column(db.Integer, db.ForeignKey('guardian.id'), nullable=False)  # Guardian 테이블의 ID 참조
+    code = db.Column(db.String(15), unique=True, nullable=False)
+
+    # Guardian 테이블과의 관계 정의
+    guardian = db.relationship('Guardian', backref=db.backref('connection_codes', lazy=True))
+
+    def __init__(self, guardian_id, code):
+        self.guardian_id = guardian_id
+        self.code = code
+
+
 
 class Verification(db.Model):
     """

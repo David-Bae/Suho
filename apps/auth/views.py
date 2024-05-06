@@ -11,6 +11,8 @@ import apps.config as config
 import jwt
 from functools import wraps
 
+from jwt.exceptions import ExpiredSignatureError, InvalidSignatureError, InvalidAlgorithmError
+
 auth = Blueprint(
     "auth",
     __name__
@@ -175,9 +177,15 @@ def login_required(f):
                 current_user = DB.Elder.query.filter_by(id=data['id']).first()
             else:
                 current_user = DB.Guardian.query.filter_by(id=data['id']).first()
-        except:
-            return jsonify({'message': '토큰이 유효하지 않습니다!'}), 401
-        
+        except ExpiredSignatureError:
+            return jsonify({'error': '토큰이 만료되었습니다.'}), 401
+        except InvalidSignatureError:
+            return jsonify({'error': '토큰의 서명이 유효하지 않습니다.'}), 401
+        except InvalidAlgorithmError:
+            return jsonify({'error': '토큰의 알고리즘이 잘못되었습니다.'}), 401
+        except Exception as e:  # 다른 모든 JWT 관련 에러를 잡기 위해
+            return jsonify({'error': '토큰 처리 중 오류가 발생했습니다.', 'details': str(e)}), 401
+            
         return f(current_user, *args, **kwargs)
     
     return decorated_function
