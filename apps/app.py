@@ -4,8 +4,6 @@ from flask_sqlalchemy import SQLAlchemy
 
 from apps.config import DB_URI 
 
-#! for MySQL Connection
-import pymysql
 
 db = SQLAlchemy()
 
@@ -31,6 +29,12 @@ def create_app():
 
     from apps.auth import views as auth_views
     app.register_blueprint(auth_views.auth, url_prefix="/auth")
+
+    from apps.elder import views as elder_views
+    app.register_blueprint(elder_views.elder, url_prefix="/elder")
+
+    from apps.guardian import views as guardian_views
+    app.register_blueprint(guardian_views.guardian, url_prefix="/guardian")
 
     return app
 

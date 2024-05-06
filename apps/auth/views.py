@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, jsonify
+from flask import Blueprint, request, jsonify
 from apps.crud import models as DB
 from datetime import date, datetime, timedelta
 from apps.app import db
