@@ -14,7 +14,7 @@ guardian = Blueprint(
 def index():
     return "Hello, Guardian!"
 
-@guardian.route('/generate_connection_code', methods=['POST'])
+@guardian.route('/generate-connection-code', methods=['POST'])
 @login_required
 def generate_guardian_code(current_user):
     code = create_connection_code()

@@ -1,7 +1,6 @@
 from datetime import datetime, timedelta
-
+from sqlalchemy import PrimaryKeyConstraint
 from apps.app import db
-#from werkzeug.security import generate_password_hash
 
 class User(db.Model):
     """
@@ -47,11 +46,13 @@ class Guardian(User):
 
 class CareRelationship(db.Model):
     __tablename__ = 'care_relationship'
-    id = db.Column(db.Integer, primary_key=True)  # 고유한 관계 ID
     elder_id = db.Column(db.Integer, db.ForeignKey('elder.id'), nullable=False)
     guardian_id = db.Column(db.Integer, db.ForeignKey('guardian.id'), nullable=False)
     elder_to_guardian_relation = db.Column(db.String(50))  # Elder가 Guardian을 어떻게 인식하는지 (예: 아들)
     guardian_to_elder_relation = db.Column(db.String(50))  # Guardian이 Elder를 어떻게 인식하는지 (예: 아버지)
+
+    # 합성키를 primary key로 지정
+    __table_args__ = (PrimaryKeyConstraint('elder_id', 'guardian_id'), )
 
     # 관계를 통한 연결 (SQLAlchemy backref)
     elder = db.relationship('Elder', backref=db.backref('care_relationships', lazy=True))
