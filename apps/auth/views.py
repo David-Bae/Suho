@@ -5,6 +5,10 @@ from apps.app import db
 from apps.utils import utils
 import random
 import bcrypt
+# jwt
+import apps.config as config
+import jwt
+from functools import wraps
 
 auth = Blueprint(
     "auth",
@@ -128,4 +132,32 @@ def login():
     if not bcrypt.checkpw(password.encode('UTF-8'), user.password_hash.encode('utf-8')):
         return jsonify({'error': '비밀번호가 틀렸습니다.'}), 401
     
-    return jsonify({'message': '로그인 성공!'}), 200
+    #! JWT token
+    access_token = jwt.encode({'id': user.id}, config.JWT_SECRET, algorithm='HS256')
+
+    return jsonify({'message': '로그인 성공!', 'access_token': access_token}), 200
+
+
+# 인증 decorator 함수
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        token = None
+        
+        # 요청 헤더에서 token 추출
+        if 'Authorization' in request.headers:
+            token = request.headers['Authorization']
+        
+        if not token:
+            return jsonify({'message': '토큰이 없습니다!'}), 401
+        
+        try:
+            # 토큰 복호화 및 데이터 추출
+            data = jwt.decode(token, config.JWT_SECRET, algorithms="HS256")
+            current_user = User.query.filter_by(id=data['id']).first()
+        except:
+            return jsonify({'message': '토큰이 유효하지 않습니다!'}), 401
+        
+        return f(current_user, *args, **kwargs)
+    
+    return decorated_function
