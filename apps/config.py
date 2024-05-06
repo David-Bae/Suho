@@ -1,6 +1,7 @@
 DB_USERNAME = 'dasoni'
 DB_PASSWORD = 'ivfba85OoBFBriUuaWTs'
-DB_HOST = 'suho-app-backend-database.czai008weihy.ap-southeast-2.rds.amazonaws.com'
+#DB_HOST = 'suho-app-backend-database.czai008weihy.ap-southeast-2.rds.amazonaws.com'
+DB_HOST = 'suho-app-backend-database.ch8cwyekoiu2.ap-northeast-2.rds.amazonaws.com'
 DB_PORT = '3306'
 DB_NAME = 'suho_app_backend'
 

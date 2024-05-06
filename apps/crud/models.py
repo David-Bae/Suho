@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from sqlalchemy import PrimaryKeyConstraint
 from apps.app import db
 
@@ -99,3 +99,11 @@ class Verification(db.Model):
         self.phone = phone
         self.code = code
         self.expiration_time = datetime.utcnow() + timedelta(minutes=5)  # 5분 후 만료
+
+
+class Dummy(db.Model):
+    """
+    DB 연결을 확인하기 위한 Dummy 테이블
+    """
+    id = db.Column(db.Integer, primary_key=True)
+    time = db.Column(db.DateTime(timezone=True), default=datetime.now(timezone.utc), nullable=False)
