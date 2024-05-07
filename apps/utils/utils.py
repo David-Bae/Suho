@@ -1,6 +1,13 @@
-# 전화 번호 형식 검증 함수.
 import phonenumbers
+from zoneinfo import ZoneInfo
+from datetime import datetime
+import bcrypt
+from sdk.api.message import Message
+from apps.config import COOLSMS_KEY, COOLSMS_SECRET
+import string, random
 
+
+# 전화 번호 형식 검증 함수.
 def validate_phone_number(phone_number):
     try:
         number = phonenumbers.parse(phone_number, "KR")
@@ -10,8 +17,6 @@ def validate_phone_number(phone_number):
 
 
 # 비밀번호를 암호화(해싱)하는 함수.
-import bcrypt
-
 def hashing_password(password):
     password_bytes = password.encode('utf-8')
     password_hash = bcrypt.hashpw(password_bytes, bcrypt.gensalt())
@@ -24,9 +29,6 @@ def check_password(password, db_password):
 
 
 # 회원가입시 인증 코드를 보내는 함수.
-from sdk.api.message import Message
-from apps.config import COOLSMS_KEY, COOLSMS_SECRET
-
 def send_verification_sms(phone, code):
     params = dict()
     params['type'] = 'sms' 
@@ -38,9 +40,14 @@ def send_verification_sms(phone, code):
     cool.send(params)
 
 # 고령자-보호자 계정 연동에 필요한 연동 코드 생성
-import string, random
-
 def create_connection_code():
     characters = string.ascii_letters + string.digits
     code = ''.join(random.choice(characters) for _ in range(15))
     return code
+
+# 서울의 현재 시간 반환
+def get_current_time_seoul():
+    now = datetime.now(tz=ZoneInfo('UTC'))
+    now = now.astimezone(ZoneInfo('Asia/Seoul'))
+    
+    return now

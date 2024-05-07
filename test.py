@@ -1,4 +1,3 @@
-from apps.crud.models import Dummy
+from apps.utils.utils import get_current_time_seoul
 
-dummy = Dummy()
-print(dummy.time)
+print(get_current_time_seoul())

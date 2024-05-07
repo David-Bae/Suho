@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from apps.crud import models as DB
-from datetime import date, datetime, timedelta
+from datetime import date, timedelta
 from apps.app import db
 from apps.utils import utils
 import random
@@ -70,7 +70,8 @@ def verify_code():
     # Verification 테이블에서 가장 최근 인증 정보를 가져온다
     verification = DB.Verification.query.filter_by(phone=phone).order_by(DB.Verification.expiration_time.desc()).first()
 
-    if verification is None or verification.code != code or verification.expiration_time < datetime.utcnow():
+    # 인증 코드 유효성 검사
+    if verification is None or verification.code != code or verification.expiration_time < utils.get_current_time_seoul():
         return jsonify({'error': '유효하지 않거나 만료된 코드입니다'}), 400
     
     # 인증 성공 시 verified 컬럼 업데이트
@@ -88,7 +89,7 @@ def sign_up():
 
     # 전화번호가 인증되었는지 확인
     phone = new_user['phone']
-    one_hour_ago = datetime.utcnow() - timedelta(hours=1)
+    one_hour_ago = utils.get_current_time_seoul() - timedelta(hours=1)
 
     # 해당 전화번호로 인증된 최근 1시간 내의 레코드를 조회
     verified_record = DB.Verification.query.filter(

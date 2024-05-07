@@ -1,6 +1,8 @@
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
 from sqlalchemy import PrimaryKeyConstraint
 from apps.app import db
+from apps.utils import utils
 
 class User(db.Model):
     """
@@ -98,12 +100,14 @@ class Verification(db.Model):
     def __init__(self, phone, code):
         self.phone = phone
         self.code = code
-        self.expiration_time = datetime.utcnow() + timedelta(minutes=5)  # 5분 후 만료
-
+        self.expiration_time = datetime.now(tz=ZoneInfo('UTC')) + timedelta(minutes=5)  # 5분 후 만료
+        self.expiration_time = self.expiration_time.astimezone(ZoneInfo('Asia/Seoul'))
 
 class Dummy(db.Model):
     """
     DB 연결을 확인하기 위한 Dummy 테이블
     """
     id = db.Column(db.Integer, primary_key=True)
-    time = db.Column(db.DateTime(timezone=True), default=datetime.now(timezone.utc), nullable=False)
+    time = db.Column(db.DateTime(timezone=True),
+                     default=utils.get_current_time_seoul(), nullable=False)
+    
