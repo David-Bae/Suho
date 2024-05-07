@@ -1,6 +1,9 @@
 # Created by https://www.toptal.com/developers/gitignore/api/visualstudiocode,flask,python
 # Edit at https://www.toptal.com/developers/gitignore?templates=visualstudiocode,flask,python
 
+.env
+test.py
+
 ### Flask ###
 instance/*
 !instance/.gitignore
@@ -280,4 +283,3 @@ pyrightconfig.json
 
 # End of https://www.toptal.com/developers/gitignore/api/visualstudiocode,flask,python
 test.py
-.env
