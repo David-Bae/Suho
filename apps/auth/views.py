@@ -37,7 +37,7 @@ def phone_verification():
     # 전화번호 형식 변경 (01012345678 -> 010-1234-5678)
     if len(phone) == 11:
         phone = f"{phone[:3]}-{phone[3:7]}-{phone[7:]}"
-    
+
     # 이미 등록된 전화번호인지 확인
     if DB.Elder.query.filter_by(phone=phone).first() is not None or \
        DB.Guardian.query.filter_by(phone=phone).first() is not None:
@@ -54,7 +54,7 @@ def phone_verification():
     verification = DB.Verification(phone=phone, code=verification_code)
     db.session.add(verification)
     db.session.commit()
-    
+
     return jsonify({'message': '인증코드가 성공적으로 발송되었습니다. 입력하신 전화번호로 전송된 인증코드를 입력해 주세요.'}), 200
 
 @auth.route("/verify-code", methods=['POST'])
@@ -73,7 +73,7 @@ def verify_code():
     # 인증 코드 유효성 검사
     if verification is None or verification.code != code or verification.expiration_time < utils.get_current_time_seoul():
         return jsonify({'error': '유효하지 않거나 만료된 코드입니다'}), 400
-    
+
     # 인증 성공 시 verified 컬럼 업데이트
     if not verification.verified:
         verification.verified = True
@@ -149,7 +149,7 @@ def login():
 
     if not bcrypt.checkpw(password.encode('utf-8'), user.password_hash.encode('utf-8')):
         return jsonify({'error': '비밀번호가 틀렸습니다.'}), 401
-    
+
     user_type = 'E' if type(user) == DB.Elder else 'G'
 
     #! JWT token
@@ -163,14 +163,14 @@ def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         token = None
-        
+
         # 요청 헤더에서 token 추출
         if 'Authorization' in request.headers:
             token = request.headers['Authorization']
-        
+
         if not token:
             return jsonify({'message': '토큰이 없습니다!'}), 401
-        
+
         try:
             # 토큰 복호화 및 데이터 추출
             data = jwt.decode(token, config.JWT_SECRET, algorithms="HS256")
@@ -186,7 +186,7 @@ def login_required(f):
             return jsonify({'error': '토큰의 알고리즘이 잘못되었습니다.'}), 401
         except Exception as e:  # 다른 모든 JWT 관련 에러를 잡기 위해
             return jsonify({'error': '토큰 처리 중 오류가 발생했습니다.', 'details': str(e)}), 401
-            
+
         return f(current_user, *args, **kwargs)
-    
+
     return decorated_function
