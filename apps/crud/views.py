@@ -29,3 +29,7 @@ def check_db():
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': 'Failed to connect to the database or add data.', 'details': str(e)}), 500
+
+@crud.route("/yuju", methods=['GET'])
+def hello_yuju():
+    return "Hello, YuJu!"
