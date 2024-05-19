@@ -110,4 +110,19 @@ class Dummy(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     time = db.Column(db.DateTime(timezone=True),
                      default=utils.get_current_time_seoul(), nullable=False)
+
+class CustomQuestion(db.Model):
+    """
+    보호자가 등록한 개인적인 질문들
+    """
+    __tablename__ = 'custom_questions'
     
+    id = db.Column(db.Integer, primary_key=True)
+    elder_id = db.Column(db.Integer, db.ForeignKey('elder.id'), nullable=False)
+    guardian_id = db.Column(db.Integer, db.ForeignKey('guardian.id'), nullable=False)
+    question = db.Column(db.String(256), nullable=False)
+
+    def __init__(self, elder_id, guardian_id, question):
+        self.elder_id = elder_id
+        self.guardian_id = guardian_id
+        self.question = question
