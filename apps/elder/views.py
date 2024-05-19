@@ -1,19 +1,20 @@
+"""
+고령자 기본 API를 정의한 모듈
+"""
+
 from flask import Blueprint, request, jsonify
 from apps.crud import models as DB
 from apps.app import db
 from datetime import date, datetime, timedelta
 from apps.auth.views import login_required
+from apps.elder import elder_bp as elder
 
-elder = Blueprint(
-    "elder",
-    __name__
-)
 
-@elder.route("/")
+@elder.route("/", methods=['GET'])
 def index():
     return "Hello, elder!"
 
-@elder.route("add-guardian", methods=['POST'])
+@elder.route("/add-guardian", methods=['POST'])
 @login_required
 def add_guardian(current_user):
     code = request.json['code']

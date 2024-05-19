@@ -2,11 +2,7 @@ from flask import Blueprint, jsonify, request
 from apps.auth.views import login_required
 from apps.crud import models as DB
 from apps.app import db
-
-crud = Blueprint(
-    "crud",
-    __name__
-)
+from apps.crud import crud_bp as crud
 
 @crud.route("/")
 def index():

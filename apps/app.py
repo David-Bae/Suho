@@ -24,17 +24,17 @@ def create_app():
     def ping():
         return 'pong'
 
-    from apps.crud import views as crud_views
-    app.register_blueprint(crud_views.crud, url_prefix="/crud")
+    from apps.crud import crud_bp
+    app.register_blueprint(crud_bp, url_prefix="/crud")
 
-    from apps.auth import views as auth_views
-    app.register_blueprint(auth_views.auth, url_prefix="/auth")
+    from apps.auth import auth_bp
+    app.register_blueprint(auth_bp, url_prefix="/auth")
 
-    from apps.elder import views as elder_views
-    app.register_blueprint(elder_views.elder, url_prefix="/elder")
+    from apps.elder import elder_bp
+    app.register_blueprint(elder_bp, url_prefix="/elder")
 
-    from apps.guardian import views as guardian_views
-    app.register_blueprint(guardian_views.guardian, url_prefix="/guardian")
+    from apps.guardian import guardian_bp
+    app.register_blueprint(guardian_bp, url_prefix="/guardian")
 
     return app
 

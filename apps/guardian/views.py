@@ -5,10 +5,7 @@ from datetime import date, datetime, timedelta
 from apps.auth.views import login_required
 from apps.utils.utils import create_connection_code
 
-guardian = Blueprint(
-    "guardian",
-    __name__
-)
+from apps.guardian import guardian_bp as guardian
 
 @guardian.route("/")
 def index():

@@ -13,10 +13,10 @@ from functools import wraps
 
 from jwt.exceptions import ExpiredSignatureError, InvalidSignatureError, InvalidAlgorithmError
 
-auth = Blueprint(
-    "auth",
-    __name__
-)
+from apps.auth import auth_bp as auth
+
+
+
 
 @auth.route("/")
 def index():
