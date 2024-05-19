@@ -89,19 +89,19 @@ class ConnectionCode(db.Model):
 class Verification(db.Model):
     """
     회원가입시 전화번호 인증을 위한 table
-    인증코드가 발송된 후 5분 뒤에 만료도록 구현.
     """
+    __tablename__ = 'phone_verification_code'
     id = db.Column(db.Integer, primary_key=True)
     phone = db.Column(db.String(15), nullable=False)
     code = db.Column(db.String(6), nullable=False)
-    expiration_time = db.Column(db.DateTime, nullable=False)  # 인증 코드 만료 시간
+    #expiration_time = db.Column(db.DateTime, nullable=False)  # 인증 코드 만료 시간
     verified = db.Column(db.Boolean, default=False, nullable=False)  # 인증 성공 여부
 
     def __init__(self, phone, code):
         self.phone = phone
         self.code = code
-        self.expiration_time = datetime.now(tz=ZoneInfo('UTC')) + timedelta(minutes=5)  # 5분 후 만료
-        self.expiration_time = self.expiration_time.astimezone(ZoneInfo('Asia/Seoul'))
+        #self.expiration_time = datetime.now(tz=ZoneInfo('UTC')) + timedelta(minutes=5)  # 5분 후 만료
+        #self.expiration_time = self.expiration_time.astimezone(ZoneInfo('Asia/Seoul'))
 
 class Dummy(db.Model):
     """

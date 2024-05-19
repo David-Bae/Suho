@@ -5,6 +5,7 @@ from apps.app import db
 from apps.utils import utils
 import random
 import bcrypt
+from sqlalchemy import desc
 from sqlalchemy.exc import SQLAlchemyError
 # jwt
 import apps.config as config
@@ -68,11 +69,12 @@ def verify_code():
         phone = f"{phone[:3]}-{phone[3:7]}-{phone[7:]}"
 
     # Verification 테이블에서 가장 최근 인증 정보를 가져온다
-    verification = DB.Verification.query.filter_by(phone=phone).order_by(DB.Verification.expiration_time.desc()).first()
+    verification = DB.Verification.query.filter_by(phone=phone).order_by(desc(DB.Verification.id)).first()
 
     # 인증 코드 유효성 검사
-    if verification is None or verification.code != code or verification.expiration_time < utils.get_current_time_seoul():
-        return jsonify({'error': '유효하지 않거나 만료된 코드입니다'}), 400
+    #if verification is None or verification.code != code or verification.expiration_time < utils.get_current_time_seoul():
+    if verification is None or verification.code != code:
+        return jsonify({'error': f'유효하지 않은 코드입니다: {verification.code}'}), 400
 
     # 인증 성공 시 verified 컬럼 업데이트
     if not verification.verified:
@@ -89,13 +91,11 @@ def sign_up():
 
     # 전화번호가 인증되었는지 확인
     phone = new_user['phone']
-    one_hour_ago = utils.get_current_time_seoul() - timedelta(hours=1)
 
     # 해당 전화번호로 인증된 최근 1시간 내의 레코드를 조회
     verified_record = DB.Verification.query.filter(
         DB.Verification.phone == phone,
-        DB.Verification.verified == True,
-        DB.Verification.expiration_time >= one_hour_ago
+        DB.Verification.verified == True
     ).first()
 
     # 인증된 레코드가 없는 경우 에러 메시지 반환
