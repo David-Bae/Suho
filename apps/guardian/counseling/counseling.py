@@ -8,10 +8,11 @@ from apps.app import db
 def index_counseling():
     return "Hello, Counseling!"
 
-@guardian.route('/counseling/register', methods=['POST'])
-def register_question():
+@guardian.route('/counseling/add-question', methods=['POST'])
+@login_required
+def add_question(current_user):
     question_data = request.json
-    guardian_id = question_data['guardian_id'] #! 보호자 ID는 log 쿠키에서 얻기.
+    guardian_id = current_user.id
     """
     사용자 ID는 보안이 필요한 정보는 아님.
     보호자 계정에서 고령자를 조회했을 때,
