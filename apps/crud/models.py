@@ -35,9 +35,24 @@ class Elder(User):
     __tablename__ = 'elder'
     current_location = db.Column(db.String(255))
 
+    """
+    고령자가 매일 어떤 설문을 해야할지에 대한 정보를 저장한 Column
+    0: 신체적 건강, 1: 정신 건강, 2: 사회적 건강, 3: 생활습관
+    update_counseling_type() 함수로 업데이트할 수 있음.
+    
+    """
+    counseling_type = db.Column(db.Integer, nullable=False)
+
     def __init__(self, phone, password_hash, name, birthdate, gender=None, residence=None, current_location=None):
         super().__init__(phone, password_hash, name, birthdate, gender, residence)
         self.current_location = current_location
+        self.counseling_type = 0
+
+    def update_counseling_type(self):
+        counseling_types = [0, 1, 2, 3]
+        # 현재 상담 유형을 순환시켜서 다음 유형으로 업데이트
+        self.counseling_type = (self.counseling_type + 1) % len(counseling_types)
+        db.session.commit()    
 
 class Guardian(User):
     """

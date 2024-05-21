@@ -33,7 +33,7 @@ def phone_verification():
 
     # 전화번호 유효성 검사.
     if utils.validate_phone_number(phone) == False:
-        return "유효하지 않는 전화번호입니다."
+        return jsonify({'error': '유효하지 않는 전화번호입니다.'}), 400
 
     # 전화번호 형식 변경 (01012345678 -> 010-1234-5678)
     if len(phone) == 11:
@@ -42,7 +42,7 @@ def phone_verification():
     # 이미 등록된 전화번호인지 확인
     if DB.Elder.query.filter_by(phone=phone).first() is not None or \
        DB.Guardian.query.filter_by(phone=phone).first() is not None:
-        return "이미 등록된 전화번호입니다."
+        return jsonify({'error': '이미 등록된 전화번호입니다.'}), 400
 
     #! 전화번호 인증
     # 인증코드 생성
@@ -72,7 +72,6 @@ def verify_code():
     verification = DB.Verification.query.filter_by(phone=phone).order_by(desc(DB.Verification.id)).first()
 
     # 인증 코드 유효성 검사
-    #if verification is None or verification.code != code or verification.expiration_time < utils.get_current_time_seoul():
     if verification is None or verification.code != code:
         return jsonify({'error': f'유효하지 않은 코드입니다: {verification.code}'}), 400
 
@@ -100,7 +99,7 @@ def sign_up():
 
     # 인증된 레코드가 없는 경우 에러 메시지 반환
     if not verified_record:
-        return jsonify({'error': '전화번호가 인증되지 않았습니다. 다시 인증 절차를 진행해 주세요.'}), 400
+        return jsonify({'error': '전화번호가 인증되지 않았습니다. 인증 절차를 진행해 주세요.'}), 400
 
     user_type = new_user['user_type']
     name = new_user['name']
