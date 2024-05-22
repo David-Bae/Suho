@@ -1,6 +1,7 @@
 from apps.elder import elder_bp as elder
 from apps.auth.views import login_required
 from apps.crud import models as DB
+from apps.app import db
 from flask import request, jsonify
 import os
 import json
@@ -32,7 +33,6 @@ def get_daily_counseling(current_user):
     """
 
     elder = DB.Elder.query.filter_by(id=current_user.id).first()
-    elder.update_counseling_type() #! 상담 수행 완료 후에 상담에 대한 답을 받을 때 업데이트
 
     file_path = os.path.join(COUNSELING_FILE_DIR, COUNSELING_NAME[elder.counseling_type],'survey.json')
 
@@ -42,15 +42,6 @@ def get_daily_counseling(current_user):
     return jsonify(counseling_data), 200
 
 
-
-@elder.route("/daily-question", methods=['GET'])
-@login_required
-def get_daily_question(current_user):
-    """
-    보호자가 등록한 질문을 반환하는 API
-    """
-
-    return jsonify({'message': f'ID: {current_user.id}'}), 200
 
 """
 정형화된 검사를 점수화 하는 함수
@@ -85,3 +76,46 @@ def evaluate_lifestyle(answers):
     score = sum(answers[:2]) * 0.25 + sum(answers[2:7]) + sum(answers[7:10]) * 0.5
     score *= 10
     return round(score, 1)
+
+#! 점수화 함수 배열
+evaluation_functions = [
+    evaluate_physical_health,
+    evaluate_mental_health,
+    evaluate_social_health,
+    evaluate_lifestyle
+]
+
+
+
+@elder.route("/answer-daily-counseling", methods=['POST'])
+@login_required
+def answer_daily_counseling(current_user):
+    """
+    검사 답변을 토대로 점수를 계산하고 DB에 저장.
+    """
+    #! user.type에 맞는 점수 계산.
+    answers = request.json['answers']
+    elder = DB.Elder.query.filter_by(id=current_user.id).first()
+    score = evaluation_functions[elder.counseling_type](answers)
+
+    #! 점수 DB에 저장.
+    new_score = DB.CounselingScore(elder_id=elder.id, 
+                counseling_type=elder.counseling_type, score=score)
+    
+    db.session.add(new_score)
+    db.session.commit()
+
+    #! user.type ++.
+    elder.update_counseling_type()
+
+    return jsonify({'message': f'{score}'}), 200
+
+
+@elder.route("/daily-question", methods=['GET'])
+@login_required
+def get_daily_question(current_user):
+    """
+    보호자가 등록한 질문을 반환하는 API
+    """
+
+    return jsonify({'message': f'ID: {current_user.id}'}), 200

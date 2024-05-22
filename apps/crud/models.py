@@ -1,6 +1,6 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from zoneinfo import ZoneInfo
-from sqlalchemy import PrimaryKeyConstraint
+from sqlalchemy import PrimaryKeyConstraint, Date, Float
 from apps.app import db
 from apps.utils import utils
 
@@ -52,7 +52,25 @@ class Elder(User):
         counseling_types = [0, 1, 2, 3]
         # 현재 상담 유형을 순환시켜서 다음 유형으로 업데이트
         self.counseling_type = (self.counseling_type + 1) % len(counseling_types)
-        db.session.commit()    
+        db.session.commit()
+
+class CounselingScore(db.Model):
+    """
+    고령자가 수행한 검사(상담) 점수를 저장하는 테이블
+    """
+    __tablename__ = 'counseling_score'
+    id = db.Column(db.Integer, primary_key=True)
+    elder_id = db.Column(db.Integer, db.ForeignKey('elder.id'), nullable=False)
+    counseling_type = db.Column(db.Integer, nullable=False)
+    date = db.Column(Date, nullable=False)
+    score = db.Column(Float, nullable=False)
+
+    def __init__(self, elder_id, counseling_type, score):
+        self.elder_id = elder_id
+        self.counseling_type = counseling_type
+        self.score = score
+        self.date = date.today()
+
 
 class Guardian(User):
     """
@@ -141,3 +159,4 @@ class CustomQuestion(db.Model):
         self.elder_id = elder_id
         self.guardian_id = guardian_id
         self.question = question
+
