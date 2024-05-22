@@ -51,3 +51,37 @@ def get_daily_question(current_user):
     """
 
     return jsonify({'message': f'ID: {current_user.id}'}), 200
+
+"""
+정형화된 검사를 점수화 하는 함수
+Input: 객관식 답변 배열.
+Output: 점수 (실수)
+각 항목에 하나의 함수가 존재한다.
+"""
+def evaluate_physical_health(answers):
+    score = answers[0] * 0.33 + answers[1] + answers[2] * 0.33 + \
+            answers[3] + answers[4] + answers[5]
+    if score > 5.9:
+        score = 100.0
+    else:
+        score = score / 6 * 100
+    return round(score, 1)
+
+def evaluate_mental_health(answers):
+    score = 11.0 + sum(answers)
+    if 43.9 < score < 44.1:
+        score = 100.0
+    else:
+        score = score / 44 * 100
+    return round(score, 1)
+
+def evaluate_social_health(answers):
+    score = sum(answers)
+    score = score / 3 * 10
+
+    return round(score, 1)
+
+def evaluate_lifestyle(answers):
+    score = sum(answers[:2]) * 0.25 + sum(answers[2:7]) + sum(answers[7:10]) * 0.5
+    score *= 10
+    return round(score, 1)
