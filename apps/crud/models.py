@@ -32,6 +32,7 @@ class Elder(User):
     """
     고령자 정보를 저장하는 테이블
     """
+
     __tablename__ = 'elder'
     current_location = db.Column(db.String(255))
 
@@ -70,6 +71,38 @@ class CounselingScore(db.Model):
         self.counseling_type = counseling_type
         self.score = score
         self.date = date.today()
+
+
+class MonthlyEvaluation(db.Model):
+    """
+    고령자가 수행한 검사(상담) 월별 평가가 저장된 테이블
+    """
+    __tablename__ = "monthly_evaluation"
+
+    id = db.Column(db.Integer, primary_key=True)
+    elder_id = db.Column(db.Integer, db.ForeignKey('elder.id'), nullable=False)
+    month = db.Column(db.String(7), nullable=False)
+
+    physical_score = db.Column(db.Float)    # 0
+    mental_score = db.Column(db.Float)      # 1
+    social_score = db.Column(db.Float)      # 2
+    lifestyle_score = db.Column(db.Float)   # 3
+
+    #! 한 달에 하나의 월별 평가만 존재
+    __table_args__ = (
+        db.UniqueConstraint('elder_id', 'month', name='unique_elder_month'),
+    )
+
+    #! 평가를 하지 않은 항목은 None
+    def __init__(self, elder_id, month, physical_score=None, 
+                 mental_score=None, social_score=None, lifestyle_score=None):
+        self.elder_id = elder_id
+        self.month = month
+        self.physical_score = physical_score
+        self.mental_score = mental_score
+        self.social_score = social_score
+        self.lifestyle_score = lifestyle_score
+
 
 
 class Guardian(User):

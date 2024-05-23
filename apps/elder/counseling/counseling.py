@@ -111,6 +111,27 @@ def answer_daily_counseling(current_user):
     return jsonify({'message': f'{score}'}), 200
 
 
+@elder.route("/monthly-evaluation", methods=['POST'])
+@login_required
+def get_monthly_evaluation(current_user):
+    """
+    월별 평가를 저장하는 DB를 만들어.
+    'monthly-evaluation' API가 호출되었을 때,
+    해당월 점수가 계산이 안되어있으면 -> 해당 월 점수를 계산 후 반환
+    해당월 점수가 계산이 되어있으면 -> 해당 월 점수 반환
+    """
+    month = request.json['year_month']
+
+    monthly_evaluation = DB.MonthlyEvaluation.query.filter_by(elder_id=current_user.id, month=month).first()
+    if monthly_evaluation is None:
+        new_monthly_evaluation = DB.MonthlyEvaluation(current_user.id, month, 78, 23, None, 23)
+        db.session.add(new_monthly_evaluation)
+        db.session.commit()
+        return jsonify({'message': 'Job Done!'}), 200 
+    else:
+        return jsonify({'message': 'Already Exist!'}), 200 
+
+
 @elder.route("/daily-question", methods=['GET'])
 @login_required
 def get_daily_question(current_user):
