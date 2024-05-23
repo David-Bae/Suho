@@ -3,6 +3,7 @@ from apps.auth.views import login_required
 from apps.crud import models as DB
 from apps.app import db
 from flask import request, jsonify
+from sqlalchemy import func, text
 import os
 import json
 
@@ -15,7 +16,7 @@ import json
 current_file_path = os.path.abspath(__file__)
 current_directory = os.path.dirname(current_file_path)
 COUNSELING_FILE_DIR = os.path.join(current_directory, 'questionnaires')
-COUNSELING_NAME = ['physical_health', 'mental_health', 'social_health', 'lifestyle']
+COUNSELING_NAME = ['0_physical_health', '1_mental_health', '2_social_health', '3_lifestyle']
 #####################################################################################
 
 
@@ -120,16 +121,38 @@ def get_monthly_evaluation(current_user):
     해당월 점수가 계산이 안되어있으면 -> 해당 월 점수를 계산 후 반환
     해당월 점수가 계산이 되어있으면 -> 해당 월 점수 반환
     """
+    #! 클라이언트에게 'YYYY-MM' 정보를 받는다.
     month = request.json['year_month']
 
+    #! 해당 월의 월별평가가 존재하는지 검색
     monthly_evaluation = DB.MonthlyEvaluation.query.filter_by(elder_id=current_user.id, month=month).first()
+
+    #! 월별평가가 존재하지 않으면 월별평가 계산
     if monthly_evaluation is None:
-        new_monthly_evaluation = DB.MonthlyEvaluation(current_user.id, month, 78, 23, None, 23)
-        db.session.add(new_monthly_evaluation)
+        scores = []
+        for i in range(4):
+            score = db.session.query(func.avg(DB.CounselingScore.score)).filter(
+                DB.CounselingScore.counseling_type == i,
+                text(f"DATE_FORMAT(date, '%Y-%m') = '{month}'")                 
+            ).scalar()
+
+            if score is not None:
+                score = round(score, 1)
+            scores.append(score)
+
+        monthly_evaluation = DB.MonthlyEvaluation(current_user.id, month,
+                                scores[0], scores[1], scores[2], scores[3])
+        db.session.add(monthly_evaluation)
         db.session.commit()
-        return jsonify({'message': 'Job Done!'}), 200 
-    else:
-        return jsonify({'message': 'Already Exist!'}), 200 
+
+    #! 월별평가 반환
+    return jsonify({'month': f'{monthly_evaluation.month}',
+                    'physical_score': f'{monthly_evaluation.physical_score}',
+                    'mental_score': f'{monthly_evaluation.mental_score}',
+                    'social_score': f'{monthly_evaluation.social_score}',
+                    'lifestyle_score': f'{monthly_evaluation.lifestyle_score}',
+                    }), 200 
+
 
 
 @elder.route("/daily-question", methods=['GET'])

@@ -116,6 +116,7 @@
     },
     "metadata": {
         "question_count": 11,
-        "options_count": [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4]
+        "options_count": [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4],
+        "counseling_type": "1 Mental Health"
     }
 }

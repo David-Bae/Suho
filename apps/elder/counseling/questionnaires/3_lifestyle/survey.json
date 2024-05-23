@@ -95,6 +95,7 @@
   },
   "metadata": {
       "question_count": 10,
-      "options_count": [5, 5, 2, 2, 2, 2, 2, 3, 3, 3]
+      "options_count": [5, 5, 2, 2, 2, 2, 2, 3, 3, 3],
+      "counseling_type": "3 Lifestyle"
   }
 }
