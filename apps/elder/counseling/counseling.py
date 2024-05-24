@@ -151,33 +151,50 @@ def get_monthly_evaluation(current_user):
                     }), 200 
 
 
-id_cache = None
-questions_cache = []
+#? AI 상담은 다수의 사용자가 동시에 요청할 수 있다.(제한 없음)
+ID_CACHE = []
+QUESTIONS_CACHE = {}
 
+@elder.route("check-cache", methods=['GET'])
+def check_cache():
+    # ID_CACHE와 QUESTIONS_CACHE의 상태를 JSON 형식으로 반환
+    return jsonify({
+        "id_cache": ID_CACHE,
+        "questions_cache": QUESTIONS_CACHE
+    }), 200
+    
 @elder.route("/daily-question", methods=['POST'])
 @login_required
 def get_daily_question(current_user):
     """
     보호자가 등록한 질문을 반환하는 API
     """
-    global id_cache
-    global questions_cache
+    global ID_CACHE
+    global QUESTIONS_CACHE
 
     elder_id = current_user.id
 
-    if id_cache == elder_id:
-        if not questions_cache:
-            id_cache = None
+    if elder_id in ID_CACHE:
+        if not QUESTIONS_CACHE[elder_id]:
+            ID_CACHE.remove(elder_id)
+            del QUESTIONS_CACHE[elder_id]
             return jsonify({'message': '상담이 종료되었습니다.'}), 200
     else:
-        id_cache = elder_id
+        ID_CACHE.append(elder_id)
+        QUESTIONS_CACHE[elder_id] = []
 
         #! DB에서 질문 가져오기
         questions_DB = db.session.query(DB.CustomQuestion.question).filter_by(elder_id=elder_id).all()
         for question in questions_DB:
-            questions_cache.append(str(question[0]))
+            QUESTIONS_CACHE[elder_id].append(str(question[0]))
 
-    return jsonify({'message': f'{questions_cache[0]}'}), 200
+        #? 보호자가 질문을 하나도 등록하지 않았으면 일상적인 Dummy 질문을 한다.
+        if not QUESTIONS_CACHE[elder_id]:
+            QUESTIONS_CACHE[elder_id].append("요즘 제일 보고싶은 사람은 누구인가요?")
+            QUESTIONS_CACHE[elder_id].append("요즘 가장 즐거운 일은 무엇인가요?")
+            QUESTIONS_CACHE[elder_id].append("요즘 불편하신 곳은 없으신가요?")
+
+    return jsonify({'message': f'{QUESTIONS_CACHE[elder_id][0]}'}), 200
 
 
 @elder.route("/answer-daily-question", methods=['POST'])
@@ -188,6 +205,8 @@ def answer_daily_question():
 
     elder_id = request.json['id']
 
-    del questions_cache[0]
+    deleted_question = QUESTIONS_CACHE[elder_id][0]
 
-    return jsonify({'message': '다음으로 넘어가시죠'}), 200
+    del QUESTIONS_CACHE[elder_id][0]
+
+    return jsonify({'message': f'답변 완료: {deleted_question}'}), 200

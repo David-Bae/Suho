@@ -73,7 +73,7 @@ def verify_code():
 
     # 인증 코드 유효성 검사
     if verification is None or verification.code != code:
-        return jsonify({'error': f'유효하지 않은 코드입니다: {verification.code}'}), 400
+        return jsonify({'error': f'유효하지 않은 코드입니다: {code}'}), 400
 
     # 인증 성공 시 verified 컬럼 업데이트
     if not verification.verified:
@@ -90,7 +90,9 @@ def sign_up():
 
     # 전화번호가 인증되었는지 확인
     phone = new_user['phone']
-
+    if len(phone) == 11:
+        phone = f"{phone[:3]}-{phone[3:7]}-{phone[7:]}"
+        
     # 해당 전화번호로 인증된 최근 1시간 내의 레코드를 조회
     verified_record = DB.Verification.query.filter(
         DB.Verification.phone == phone,

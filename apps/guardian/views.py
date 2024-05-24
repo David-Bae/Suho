@@ -21,4 +21,4 @@ def generate_guardian_code(current_user):
     db.session.add(connection_code)
     db.session.commit()
 
-    return jsonify({'message': f'연동 코드: {connection_code.code}'}), 200
+    return jsonify({'connection_code': f'{connection_code.code}'}), 200
