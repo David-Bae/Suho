@@ -9,10 +9,7 @@ import json
 
 
 #####################################################################################
-"""
-정형화된 검사가 저장된 디렉토리
-절대주소를 사용하는게 안전하다.
-"""
+#! 정형화된 검사가 저장된 디렉토리(절대주소 사용)
 current_file_path = os.path.abspath(__file__)
 current_directory = os.path.dirname(current_file_path)
 COUNSELING_FILE_DIR = os.path.join(current_directory, 'questionnaires')
@@ -154,12 +151,43 @@ def get_monthly_evaluation(current_user):
                     }), 200 
 
 
+id_cache = None
+questions_cache = []
 
-@elder.route("/daily-question", methods=['GET'])
+@elder.route("/daily-question", methods=['POST'])
 @login_required
 def get_daily_question(current_user):
     """
     보호자가 등록한 질문을 반환하는 API
     """
+    global id_cache
+    global questions_cache
 
-    return jsonify({'message': f'ID: {current_user.id}'}), 200
+    elder_id = current_user.id
+
+    if id_cache == elder_id:
+        if not questions_cache:
+            id_cache = None
+            return jsonify({'message': '상담이 종료되었습니다.'}), 200
+    else:
+        id_cache = elder_id
+
+        #! DB에서 질문 가져오기
+        questions_DB = db.session.query(DB.CustomQuestion.question).filter_by(elder_id=elder_id).all()
+        for question in questions_DB:
+            questions_cache.append(str(question[0]))
+
+    return jsonify({'message': f'{questions_cache[0]}'}), 200
+
+
+@elder.route("/answer-daily-question", methods=['POST'])
+def answer_daily_question():
+    """
+    질문에 대한 고령자 음성 답변을 등록하는 API
+    """
+
+    elder_id = request.json['id']
+
+    del questions_cache[0]
+
+    return jsonify({'message': '다음으로 넘어가시죠'}), 200

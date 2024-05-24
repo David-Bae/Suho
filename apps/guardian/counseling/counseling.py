@@ -26,4 +26,4 @@ def add_question(current_user):
     db.session.add(new_question)
     db.session.commit()
 
-    return jsonify({'message': '질문이 정상적으로 등록되었습니다.'}), 200
+    return jsonify({'message': '질문이 등록되었습니다.'}), 200
