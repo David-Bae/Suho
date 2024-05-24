@@ -2,7 +2,7 @@ from apps.elder import elder_bp as elder
 from apps.auth.views import login_required
 from apps.crud import models as DB
 from apps.app import db
-from flask import request, jsonify
+from flask import request, jsonify, send_file
 from sqlalchemy import func, text
 import os
 import json
@@ -152,6 +152,7 @@ def get_monthly_evaluation(current_user):
 
 
 #? AI 상담은 다수의 사용자가 동시에 요청할 수 있다.(제한 없음)
+#? WebSocket을 사용하지 않고 캐시로 구현.
 ID_CACHE = []
 QUESTIONS_CACHE = {}
 
@@ -162,7 +163,10 @@ def check_cache():
         "id_cache": ID_CACHE,
         "questions_cache": QUESTIONS_CACHE
     }), 200
-    
+
+
+from gtts import gTTS
+
 @elder.route("/daily-question", methods=['POST'])
 @login_required
 def get_daily_question(current_user):
@@ -194,7 +198,12 @@ def get_daily_question(current_user):
             QUESTIONS_CACHE[elder_id].append("요즘 가장 즐거운 일은 무엇인가요?")
             QUESTIONS_CACHE[elder_id].append("요즘 불편하신 곳은 없으신가요?")
 
-    return jsonify({'message': f'{QUESTIONS_CACHE[elder_id][0]}'}), 200
+    tts = gTTS(text=QUESTIONS_CACHE[elder_id][0], lang='ko')
+    tts_file_path = os.path.join(os.getcwd(), f'temp/{elder_id}_response.mp3')
+    tts.save(tts_file_path)
+    
+    return send_file(tts_file_path, as_attachment=True, download_name=f"{elder_id}_response.mp3", mimetype="audio/mpeg")
+
 
 
 @elder.route("/answer-daily-question", methods=['POST'])
@@ -210,3 +219,5 @@ def answer_daily_question():
     del QUESTIONS_CACHE[elder_id][0]
 
     return jsonify({'message': f'답변 완료: {deleted_question}'}), 200
+
+

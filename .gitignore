@@ -3,6 +3,7 @@
 
 .env
 test.py
+temp
 
 ### Flask ###
 instance/*
@@ -283,3 +284,4 @@ pyrightconfig.json
 
 # End of https://www.toptal.com/developers/gitignore/api/visualstudiocode,flask,python
 test.py
+/temp
