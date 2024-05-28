@@ -3,7 +3,7 @@
 
 .env
 test.py
-temp
+temp/
 
 ### Flask ###
 instance/*

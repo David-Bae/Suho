@@ -6,16 +6,20 @@ from flask import request, jsonify, send_file
 from sqlalchemy import func, text
 import os
 import json
+from apps.utils import chatbot as chat
 
 
 #####################################################################################
-#! 정형화된 검사가 저장된 디렉토리(절대주소 사용)
 current_file_path = os.path.abspath(__file__)
 current_directory = os.path.dirname(current_file_path)
+
+#! 정형화된 검사가 저장된 디렉토리(절대주소 사용)
 COUNSELING_FILE_DIR = os.path.join(current_directory, 'questionnaires')
 COUNSELING_NAME = ['0_physical_health', '1_mental_health', '2_social_health', '3_lifestyle']
-#####################################################################################
 
+#! 고령자 답변 음성 파일이 저장된 디렉토리(절대주소 사용)
+ANSWER_AUDIO_DIR = os.path.join(current_directory, 'answer_audio')
+#####################################################################################
 
 
 @elder.route("/counseling", methods=['GET'])
@@ -205,19 +209,95 @@ def get_daily_question(current_user):
     return send_file(tts_file_path, as_attachment=True, download_name=f"{elder_id}_response.mp3", mimetype="audio/mpeg")
 
 
+#? MP3 File Format Checker
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 @elder.route("/answer-daily-question", methods=['POST'])
-def answer_daily_question():
+@login_required
+def answer_daily_question(current_user):
     """
     질문에 대한 고령자 음성 답변을 등록하는 API
     """
+    elder_id = current_user.id
 
-    elder_id = request.json['id']
+    #? 클라이언트로부터 mp3 받기
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file part in the request'}), 400
 
-    deleted_question = QUESTIONS_CACHE[elder_id][0]
+    file = request.files['file']
+
+    if file.filename == '':
+        return jsonify({'error': 'No selected file'}), 400
+
+
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        file_path = os.path.join(ANSWER_AUDIO_DIR, filename)
+        file.save(file_path)
+
+        gpt_tts = chat.AudioChatbot(QUESTIONS_CACHE[elder_id][0], file_path)
+
+        tts_file_path = os.path.join(os.getcwd(), f'temp/{elder_id}_response.mp3')
+        gpt_tts.save(tts_file_path)
+
+        return send_file(tts_file_path, as_attachment=True, download_name=f"{elder_id}_response.mp3", mimetype="audio/mpeg")
+
+    return jsonify({'error': 'File type not allowed'}), 400
+
+
+
+    #! 질문과 사용자 답변을 활용하여 ChatGPT 응답 만들기
+    gpt_answer = chat.GPT(QUESTIONS_CACHE[elder_id][0], user_answer)
 
     del QUESTIONS_CACHE[elder_id][0]
 
-    return jsonify({'message': f'답변 완료: {deleted_question}'}), 200
+    return jsonify({'message': gpt_answer}), 200
 
 
+
+
+
+
+
+
+
+
+from werkzeug.utils import secure_filename
+
+
+
+
+
+
+
+# Configurations
+ALLOWED_EXTENSIONS = {'mp3'}
+
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+@elder.route("/post-audio-file", methods=['POST'])
+def post_audio_file():
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file part in the request'}), 400
+    
+    file = request.files['file']
+    
+    if file.filename == '':
+        return jsonify({'error': 'No selected file'}), 400
+    
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        file_path = os.path.join(ANSWER_AUDIO_DIR, filename)
+        file.save(file_path)
+        
+        # Here you can add code to process the MP3 file if needed
+        # For example, transcribe the audio to text, analyze the audio, etc.
+
+        # Dummy processing step - Assume we extract some text from the audio
+        
+        return jsonify({'message': 'Audio File Downloaded'}), 200
+    
+    return jsonify({'error': 'File type not allowed'}), 400
