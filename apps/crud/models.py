@@ -193,3 +193,22 @@ class CustomQuestion(db.Model):
         self.guardian_id = guardian_id
         self.question = question
 
+class QuestionAnswer(db.Model):
+    """
+    보호자가 등록한 개인적인 질문들에 대한 답변
+    """
+    __tablename__ = 'question_answer'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    elder_id = db.Column(db.Integer, db.ForeignKey('elder.id'), nullable=False)
+    guardian_id = db.Column(db.Integer, db.ForeignKey('guardian.id'), nullable=False)
+    question = db.Column(db.String(256), nullable=False)
+    answer = db.Column(db.String(256), nullable=False)
+    date = db.Column(Date, nullable=False)
+
+    def __init__(self, elder_id, guardian_id, question, answer, date):
+        self.elder_id = elder_id
+        self.guardian_id = guardian_id
+        self.question = question
+        self.answer = answer
+        self.date = date

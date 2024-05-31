@@ -151,12 +151,12 @@ def login():
     if not bcrypt.checkpw(password.encode('utf-8'), user.password_hash.encode('utf-8')):
         return jsonify({'error': '비밀번호가 틀렸습니다.'}), 401
 
-    user_type = 'E' if type(user) == DB.Elder else 'G'
+    user_type = 0 if type(user) == DB.Elder else 1
 
     #! JWT token
     access_token = jwt.encode({'id': user.id, 'user_type': user_type}, config.JWT_SECRET, algorithm='HS256')
 
-    return jsonify({'message': '로그인 성공!', 'access_token': access_token}), 200
+    return jsonify({'message': '로그인 성공!', 'access_token': access_token, 'user_type': user_type}), 200
 
 
 # 인증 decorator 함수

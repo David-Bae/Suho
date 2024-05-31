@@ -29,3 +29,22 @@ def check_db():
 @crud.route("/yuju", methods=['GET'])
 def hello_yuju():
     return "Hello, YuJu!"
+
+@crud.route("/add-qa", methods=['POST'])
+def add_qa():
+    qas = request.json # 여러 개의 질문-답변 쌍을 포함한 리스트
+
+    for qa in qas:
+        elder_id = qa['elder_id']
+        guardian_id = qa['guardian_id']
+        question = qa['question']
+        answer = qa['answer']
+        date = qa['date']
+
+        new_qa = DB.QuestionAnswer(elder_id, guardian_id, question, answer, date)
+        db.session.add(new_qa)
+
+    db.session.commit()
+
+    return jsonify({'message': '질문-답변이 추가되었습니다.'}), 200
+

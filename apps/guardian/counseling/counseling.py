@@ -3,6 +3,9 @@ from apps.auth.views import login_required
 from flask import request, jsonify
 from apps.crud import models as DB
 from apps.app import db
+from datetime import date
+from sqlalchemy import and_
+from apps.utils import chatbot as chat
 
 @guardian.route('/counseling', methods=['GET'])
 def index_counseling():
@@ -27,3 +30,48 @@ def add_question(current_user):
     db.session.commit()
 
     return jsonify({'message': '질문이 등록되었습니다.'}), 200
+
+month_end_days = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+def get_date_range(month_str):
+    year, month = map(int, month_str.split('-'))
+    
+    # 윤년 계산 (2월이 29일이 되는 경우)
+    if month == 2 and (year % 4 == 0 and (year % 100 != 0 or year % 400 == 0)):
+        end_day = 29
+    else:
+        end_day = month_end_days[month - 1]
+    
+    start_date = date(year, month, 1)
+    end_date = date(year, month, end_day)
+    
+    return start_date, end_date
+
+@guardian.route('/monthly-analysis', methods=['POST'])
+def monthly_analysis():
+    elder_id = request.json['elder_id']
+    month = request.json['month']
+
+    elder_name = db.session.query(DB.Elder.name).filter(DB.Elder.id == elder_id).scalar()
+
+    start_date, end_date = get_date_range(month)
+
+    results = db.session.query(DB.QuestionAnswer).filter(
+        and_(
+            DB.QuestionAnswer.elder_id == elder_id,
+            DB.QuestionAnswer.date >= start_date,
+            DB.QuestionAnswer.date <= end_date
+        )
+    ).order_by(DB.QuestionAnswer.date.asc()).all()
+
+    questions = []
+    answers = []
+    qa_date = []
+
+    for qa in results:
+        questions.append(qa.question)
+        answers.append(qa.answer)
+        qa_date.append(qa.date)
+
+    gpt_analysis = chat.analysisGPT(elder_name, questions, answers, qa_date)
+
+    return jsonify({'result': gpt_analysis}), 200
