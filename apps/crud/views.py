@@ -30,6 +30,7 @@ def check_db():
 def hello_yuju():
     return "Hello, YuJu!"
 
+#! 삭제 예정
 @crud.route("/add-qa", methods=['POST'])
 def add_qa():
     qas = request.json # 여러 개의 질문-답변 쌍을 포함한 리스트
@@ -48,3 +49,13 @@ def add_qa():
 
     return jsonify({'message': '질문-답변이 추가되었습니다.'}), 200
 
+#! 삭제 예정
+@crud.route("/add-elder", methods=['POST'])
+def add_elder():
+    user = DB.Elder(name="이순철", password_hash="dummy",
+                            phone="010-1234-5678", birthdate="1952-05-22")
+
+    db.session.add(user)
+    db.session.commit()
+
+    return jsonify({'message': '완료'}), 200
