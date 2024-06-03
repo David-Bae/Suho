@@ -199,14 +199,15 @@ class QuestionAnswer(db.Model):
     
     id = db.Column(db.Integer, primary_key=True)
     elder_id = db.Column(db.Integer, db.ForeignKey('elder.id'), nullable=False)
-    guardian_id = db.Column(db.Integer, db.ForeignKey('guardian.id'), nullable=False)
+    #guardian_id = db.Column(db.Integer, db.ForeignKey('guardian.id'), nullable=False) #! 여러명의 보호자가 질문한 것 한번에 처리.
     question = db.Column(db.String(256), nullable=False)
-    answer = db.Column(db.String(256), nullable=False)
+    answer = db.Column(db.String(256))
     date = db.Column(Date, nullable=False)
+    #! 0:angry, 1:disgust, 2:fear, 3:happy, 4:neutral, 5:sad
+    emotion = db.Column(db.Integer)
 
-    def __init__(self, elder_id, guardian_id, question, answer, date):
+    def __init__(self, elder_id, question, answer=None, date=datetime.today):
         self.elder_id = elder_id
-        self.guardian_id = guardian_id
         self.question = question
         self.answer = answer
         self.date = date

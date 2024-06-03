@@ -230,4 +230,4 @@ def find_password():
     user.password_hash = password_hash
     db.session.commit()
     
-    return jsonify({'password': '비밀번호가 변경되었습니다.'}), 200
+    return jsonify({'message': '비밀번호가 변경되었습니다.'}), 200

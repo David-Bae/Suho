@@ -107,17 +107,13 @@ def TTS(text):
     return tts
 
 
-def AudioChatbot(question, user_audio):
+def AudioChatbot(question, user_text):
     """
     question: 미리 지정된 질문 (str)
     user_audio: 고령자가 질문을 듣고 답한 음성 파일 (.mp3)
     STT, GPT, TTS를 거쳐 챗봇의 답변을 TTS로 생성하고 반환.
     tts는 mp3 파일이 아니다.
     """
-
-    #! 고령자의 답변(음성 파일)을 텍스트로 변환.
-    user_text = STT(user_audio)
-    print(f"STT: {user_text}") # 중간 결과물 출력.
 
     #! 질문과 고령자의 응답을 토대로 GPT 답변 생성.
     gpt_answer = GPT(question, user_text)

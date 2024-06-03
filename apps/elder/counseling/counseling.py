@@ -7,6 +7,8 @@ from sqlalchemy import func, text
 import os
 import json
 from apps.utils import chatbot as chat
+#from werkzeug.utils import secure_filename
+from gtts import gTTS
 
 
 #####################################################################################
@@ -169,7 +171,49 @@ def check_cache():
     }), 200
 
 
-from gtts import gTTS
+@elder.route("/daily-question-isavailable", methods=['POST'])
+@login_required
+def daily_question_isavailable(current_user):
+    """_summary_
+    'daily-question' API를 호출하기 전에 질문이 남아있는지 확인하는 API
+    
+    Args:
+        current_user : elder_id
+
+    Returns:
+        int: 1=질문O, 0=질문X
+    """
+    
+    global ID_CACHE
+    global QUESTIONS_CACHE
+
+    elder_id = current_user.id
+    
+    if elder_id in ID_CACHE:
+        #! 이전에 한번 호출해서 Cache에 고령자 ID가 남아 있는 경우.
+        if QUESTIONS_CACHE[elder_id]:
+            return jsonify({'message': 1}), 200
+        else:
+            ID_CACHE.remove(elder_id)
+            del QUESTIONS_CACHE[elder_id]
+            return jsonify({'message': 0}), 200
+    else:
+        ID_CACHE.append(elder_id)
+        QUESTIONS_CACHE[elder_id] = []
+        
+        #! DB에서 질문 가져오기
+        questions_DB = db.session.query(DB.CustomQuestion.question).filter_by(elder_id=elder_id).all()
+        if not questions_DB:
+            ID_CACHE.remove(elder_id)
+            del QUESTIONS_CACHE[elder_id]
+            return jsonify({'message': 0}), 200
+
+        for question in questions_DB:
+            QUESTIONS_CACHE[elder_id].append(str(question[0]))
+
+        return jsonify({'message': 1}), 200
+    
+    
 
 @elder.route("/daily-question", methods=['POST'])
 @login_required
@@ -182,26 +226,7 @@ def get_daily_question(current_user):
 
     elder_id = current_user.id
 
-    if elder_id in ID_CACHE:
-        if not QUESTIONS_CACHE[elder_id]:
-            ID_CACHE.remove(elder_id)
-            del QUESTIONS_CACHE[elder_id]
-            return jsonify({'message': '상담이 종료되었습니다.'}), 200
-    else:
-        ID_CACHE.append(elder_id)
-        QUESTIONS_CACHE[elder_id] = []
-
-        #! DB에서 질문 가져오기
-        questions_DB = db.session.query(DB.CustomQuestion.question).filter_by(elder_id=elder_id).all()
-        for question in questions_DB:
-            QUESTIONS_CACHE[elder_id].append(str(question[0]))
-
-        #? 보호자가 질문을 하나도 등록하지 않았으면 일상적인 Dummy 질문을 한다.
-        if not QUESTIONS_CACHE[elder_id]:
-            QUESTIONS_CACHE[elder_id].append("요즘 제일 보고싶은 사람은 누구인가요?")
-            QUESTIONS_CACHE[elder_id].append("요즘 가장 즐거운 일은 무엇인가요?")
-            QUESTIONS_CACHE[elder_id].append("요즘 불편하신 곳은 없으신가요?")
-
+    #! 질문을 TTS로 변환하여 클라이언트에 전달
     tts = gTTS(text=QUESTIONS_CACHE[elder_id][0], lang='ko')
     tts_file_path = os.path.join(os.getcwd(), f'temp/{elder_id}_response.mp3')
     tts.save(tts_file_path)
@@ -210,8 +235,10 @@ def get_daily_question(current_user):
 
 
 #? MP3 File Format Checker
+ALLOWED_EXTENSIONS = {'mp3', 'm4a'}
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 
 @elder.route("/answer-daily-question", methods=['POST'])
 @login_required
@@ -223,81 +250,40 @@ def answer_daily_question(current_user):
 
     #? 클라이언트로부터 mp3 받기
     if 'file' not in request.files:
-        return jsonify({'error': 'No file part in the request'}), 400
+        return jsonify({'error': 'request에 파일이 없습니다.'}), 400
 
+    #! file = 클라이언트가 업로드한 file object.
     file = request.files['file']
 
     if file.filename == '':
-        return jsonify({'error': 'No selected file'}), 400
+        return jsonify({'error': 'mp3 파일이 없습니다.'}), 400
 
 
+    #! 여기서부터 mp3 파일이 있는 경우.
+    #! 1. question으로 QuestionAnswer 객체 생성
+    qa = DB.QuestionAnswer(elder_id=elder_id, question=QUESTIONS_CACHE[elder_id][0])
+    
     if file and allowed_file(file.filename):
-        filename = secure_filename(file.filename)
+        #! 2. SER에 입력될 mp3 파일 이름을 QuestionAnswer의 id로 저장
+        _, format = file.filename.split('.')
+        filename = f"{qa.id}.{format}"
         file_path = os.path.join(ANSWER_AUDIO_DIR, filename)
         file.save(file_path)
 
-        gpt_tts = chat.AudioChatbot(QUESTIONS_CACHE[elder_id][0], file_path)
-
+        #! 3. STT & QuestionAnswer 객체에 사용자 답변 text 저장
+        answer_text = chat.STT(file_path)
+        qa.answer = answer_text
+        
+        #! 4. GPT 답변 TTS 생성 후 반환 & 질문 삭제
+        gpt_tts = chat.AudioChatbot(QUESTIONS_CACHE[elder_id][0], answer_text)        
         tts_file_path = os.path.join(os.getcwd(), f'temp/{elder_id}_response.mp3')
         gpt_tts.save(tts_file_path)
+        
+        del QUESTIONS_CACHE[elder_id][0]
 
         return send_file(tts_file_path, as_attachment=True, download_name=f"{elder_id}_response.mp3", mimetype="audio/mpeg")
 
-    return jsonify({'error': 'File type not allowed'}), 400
-
-
-
-    #! 질문과 사용자 답변을 활용하여 ChatGPT 응답 만들기
-    gpt_answer = chat.GPT(QUESTIONS_CACHE[elder_id][0], user_answer)
-
-    del QUESTIONS_CACHE[elder_id][0]
-
-    return jsonify({'message': gpt_answer}), 200
-
-
-
-
-
-
-
-
-
-
-from werkzeug.utils import secure_filename
-
-
-
-
-
-
-
-# Configurations
-ALLOWED_EXTENSIONS = {'mp3'}
-
-
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
-@elder.route("/post-audio-file", methods=['POST'])
-def post_audio_file():
-    if 'file' not in request.files:
-        return jsonify({'error': 'No file part in the request'}), 400
-    
-    file = request.files['file']
-    
-    if file.filename == '':
-        return jsonify({'error': 'No selected file'}), 400
-    
-    if file and allowed_file(file.filename):
-        filename = secure_filename(file.filename)
-        file_path = os.path.join(ANSWER_AUDIO_DIR, filename)
-        file.save(file_path)
-        
-        # Here you can add code to process the MP3 file if needed
-        # For example, transcribe the audio to text, analyze the audio, etc.
-
-        # Dummy processing step - Assume we extract some text from the audio
-        
-        return jsonify({'message': 'Audio File Downloaded'}), 200
-    
-    return jsonify({'error': 'File type not allowed'}), 400
+    if not file:
+        return jsonify({'error': 'File 없음'}), 400
+    else:
+        return jsonify({'error': 'File type not allowed'}), 400
