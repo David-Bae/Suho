@@ -59,3 +59,36 @@ def add_elder():
     db.session.commit()
 
     return jsonify({'message': '완료'}), 200
+
+#! 전화번호 인증 없이 회원가입할 수 있는 API.
+#! 실제로 사용하는 API 아님.
+from datetime import date
+import bcrypt
+
+@crud.route("/add-user", methods=['POST'])
+def add_user():
+    name = request.json['name']
+    user_type = request.json['user_type']
+    phone = request.json['phone']
+    birthdate = request.json['birthdate']
+    password = request.json['password']    
+    if len(phone) == 11:
+        phone = f"{phone[:3]}-{phone[3:7]}-{phone[7:]}"
+
+
+    # 비밀번호 암호화
+    password_hash = bcrypt.hashpw(
+        password.encode('utf-8'), bcrypt.gensalt()
+    ).decode('utf-8')
+
+
+    if user_type == 'E':
+        user = DB.Elder(name=name, password_hash=password_hash,
+                        phone=phone, birthdate=birthdate)
+    else:
+        user = DB.Guardian(name=name, password_hash=password_hash,
+                        phone=phone, birthdate=birthdate)
+    db.session.add(user)
+    db.session.commit()
+
+    return jsonify({'message': '회원가입이 완료되었습니다.'}), 200
