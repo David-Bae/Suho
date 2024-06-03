@@ -40,7 +40,6 @@ class Elder(User):
     고령자가 매일 어떤 설문을 해야할지에 대한 정보를 저장한 Column
     0: 신체적 건강, 1: 정신 건강, 2: 사회적 건강, 3: 생활습관
     update_counseling_type() 함수로 업데이트할 수 있음.
-    
     """
     counseling_type = db.Column(db.Integer, nullable=False)
 
@@ -160,14 +159,13 @@ class Verification(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     phone = db.Column(db.String(15), nullable=False)
     code = db.Column(db.String(6), nullable=False)
-    #expiration_time = db.Column(db.DateTime, nullable=False)  # 인증 코드 만료 시간
+    valid_date = db.Column(db.Date, nullable=False, default=date.today)  # 유효 날짜 및 시간
     verified = db.Column(db.Boolean, default=False, nullable=False)  # 인증 성공 여부
 
     def __init__(self, phone, code):
         self.phone = phone
         self.code = code
-        #self.expiration_time = datetime.now(tz=ZoneInfo('UTC')) + timedelta(minutes=5)  # 5분 후 만료
-        #self.expiration_time = self.expiration_time.astimezone(ZoneInfo('Asia/Seoul'))
+        self.valid_date = date.today()
 
 class Dummy(db.Model):
     """

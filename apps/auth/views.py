@@ -39,11 +39,6 @@ def phone_verification():
     if len(phone) == 11:
         phone = f"{phone[:3]}-{phone[3:7]}-{phone[7:]}"
 
-    # 이미 등록된 전화번호인지 확인
-    if DB.Elder.query.filter_by(phone=phone).first() is not None or \
-       DB.Guardian.query.filter_by(phone=phone).first() is not None:
-        return jsonify({'error': '이미 등록된 전화번호입니다.'}), 400
-
     #! 전화번호 인증
     # 인증코드 생성
     verification_code = str(random.randint(100000, 999999))
@@ -51,6 +46,7 @@ def phone_verification():
     #! 병렬처리.
     # 전화번호로 인증코드 발송
     utils.send_verification_sms(phone, verification_code)
+
     # DB에 전화번호, 인증코드 저장
     verification = DB.Verification(phone=phone, code=verification_code)
     db.session.add(verification)
@@ -69,7 +65,7 @@ def verify_code():
         phone = f"{phone[:3]}-{phone[3:7]}-{phone[7:]}"
 
     # Verification 테이블에서 가장 최근 인증 정보를 가져온다
-    verification = DB.Verification.query.filter_by(phone=phone).order_by(desc(DB.Verification.id)).first()
+    verification = DB.Verification.query.filter_by(phone=phone, valid_date=date.today()).order_by(desc(DB.Verification.id)).first()
 
     # 인증 코드 유효성 검사
     if verification is None or verification.code != code:
@@ -87,13 +83,16 @@ def verify_code():
 @auth.route("/sign-up", methods=['POST'])
 def sign_up():
     new_user = request.json
-
-    # 전화번호가 인증되었는지 확인
     phone = new_user['phone']
     if len(phone) == 11:
         phone = f"{phone[:3]}-{phone[3:7]}-{phone[7:]}"
         
-    # 해당 전화번호로 인증된 최근 1시간 내의 레코드를 조회
+    # 이미 등록된 전화번호인지 확인
+    if DB.Elder.query.filter_by(phone=phone).first() is not None or \
+       DB.Guardian.query.filter_by(phone=phone).first() is not None:
+        return jsonify({'error': '이미 등록된 전화번호입니다.'}), 400
+
+    # 전화번호가 인증되었는지 확인
     verified_record = DB.Verification.query.filter(
         DB.Verification.phone == phone,
         DB.Verification.verified == True
@@ -191,3 +190,44 @@ def login_required(f):
         return f(current_user, *args, **kwargs)
 
     return decorated_function
+
+
+#! 비밀번호 찾기
+@auth.route("/find-password", methods=['POST'])
+def find_password():
+    phone = request.json['phone']
+    code = request.json['code']
+    name = request.json['name']
+    new_password = request.json['password']
+    if len(phone) == 11:
+        phone = f"{phone[:3]}-{phone[3:7]}-{phone[7:]}"
+
+    #! 1. 전화번호 인증되었는지 확인
+    verification = DB.Verification.query.filter_by(phone=phone, valid_date=date.today()).order_by(desc(DB.Verification.id)).first()
+
+    if verification is None or verification.code != code:
+        return jsonify({'error': f'유효하지 않은 코드입니다: {code}'}), 400
+
+
+    #! 2. Elder, Guardian에서 전화번호로 user 찾기
+    user = DB.Elder.query.filter_by(phone=phone).first()
+    if user is None:
+        user = DB.Guardian.query.filter_by(phone=phone).first()
+
+    if user is None:
+        return jsonify({'error': '해당 사용자가 존재하지 않습니다.'}), 400
+
+    #! 3. user.name이랑 입력받은 이름 일치하는지 확인.
+    if user.name != name:
+        return jsonify({'error': '사용자 이름이 일치하지 않습니다.'}), 400
+
+
+    #! 4. 비밀번호 암호화 후 변경
+    password_hash = bcrypt.hashpw(
+        new_password.encode('utf-8'), bcrypt.gensalt()
+    ).decode('utf-8')
+    
+    user.password_hash = password_hash
+    db.session.commit()
+    
+    return jsonify({'password': '비밀번호가 변경되었습니다.'}), 200
