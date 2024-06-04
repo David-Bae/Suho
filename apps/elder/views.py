@@ -32,6 +32,8 @@ def add_guardian(current_user):
     ).first()
     if existing_relationship:
         return jsonify({'error': '이미 등록된 보호자입니다.'}), 409
+    
+    guardian = DB.Guardian.query.filter_by(id=connection_code.guardian_id).first()
 
     # CareRelationship에 추가.
     new_relationship = DB.CareRelationship(elder_id=current_user.id,
@@ -39,10 +41,6 @@ def add_guardian(current_user):
     db.session.add(new_relationship)
     db.session.commit()
 
-    return jsonify({'message': '보호자가 추가 완료'}), 200
-
-
-@elder.route("/debug", methods=['POST'])
-@login_required
-def debug(current_user):
-    return jsonify({'debug': f'{type(current_user)}'}), 200
+    return jsonify({'message': '보호자 추가 완료',
+                    'guardian_name': guardian.name,
+                    'guardian_phone': guardian.phone}), 200
