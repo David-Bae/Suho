@@ -174,7 +174,8 @@ def login_required(f):
         try:
             # 토큰 복호화 및 데이터 추출
             data = jwt.decode(token, config.JWT_SECRET, algorithms="HS256")
-            if data['user_type'] == 'E':
+
+            if data['user_type'] == 0:
                 current_user = DB.Elder.query.filter_by(id=data['id']).first()
             else:
                 current_user = DB.Guardian.query.filter_by(id=data['id']).first()

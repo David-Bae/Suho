@@ -40,3 +40,9 @@ def add_guardian(current_user):
     db.session.commit()
 
     return jsonify({'message': '보호자가 추가 완료'}), 200
+
+
+@elder.route("/debug", methods=['POST'])
+@login_required
+def debug(current_user):
+    return jsonify({'debug': f'{type(current_user)}'}), 200
