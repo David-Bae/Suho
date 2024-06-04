@@ -206,7 +206,7 @@ class QuestionAnswer(db.Model):
     #! 0:angry, 1:disgust, 2:fear, 3:happy, 4:neutral, 5:sad
     emotion = db.Column(db.Integer)
 
-    def __init__(self, elder_id, question, answer=None, date=datetime.today):
+    def __init__(self, elder_id, question, answer=None, date=datetime.today()):
         self.elder_id = elder_id
         self.question = question
         self.answer = answer

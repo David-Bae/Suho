@@ -272,7 +272,10 @@ def answer_daily_question(current_user):
 
         #! 3. STT & QuestionAnswer 객체에 사용자 답변 text 저장
         answer_text = chat.STT(file_path)
+        
         qa.answer = answer_text
+        db.session.add(qa)
+        db.session.commit()
         
         #! 4. GPT 답변 TTS 생성 후 반환 & 질문 삭제
         gpt_tts = chat.AudioChatbot(QUESTIONS_CACHE[elder_id][0], answer_text)        
