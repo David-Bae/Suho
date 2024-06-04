@@ -211,3 +211,19 @@ class QuestionAnswer(db.Model):
         self.question = question
         self.answer = answer
         self.date = date
+        
+class ElderLocation(db.Model):
+    """
+    고령자 실시간 위치를 저장하는 테이블
+    """    
+    __tablename__ = 'elder_location'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    elder_id = db.Column(db.Integer, db.ForeignKey('elder.id'), nullable=False)
+    latitude = db.Column(db.Float, nullable=False)
+    longitude = db.Column(db.Float, nullable=False)
+    
+    def __init__(self, elder_id, latitude, longitude):
+        self.elder_id = elder_id
+        self.latitude = latitude
+        self.longitude = longitude

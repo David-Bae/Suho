@@ -44,3 +44,23 @@ def add_guardian(current_user):
     return jsonify({'message': '보호자 추가 완료',
                     'guardian_name': guardian.name,
                     'guardian_phone': guardian.phone}), 200
+
+@elder.route("/update-location", methods=['POST'])
+@login_required
+def update_location(current_user):
+    elder_id = current_user.id
+    latitude = request.json['latitude']
+    longitude = request.json['longitude']
+    
+    elder_location = DB.ElderLocation.query.filter(DB.ElderLocation.elder_id == elder_id).first()
+    
+    if elder_location:
+       elder_location.latitude = latitude
+       elder_location.longitude = longitude 
+    else:
+        elder_location = DB.ElderLocation(elder_id, latitude=latitude, longitude=longitude)
+        db.session.add(elder_location)
+        
+    db.session.commit()
+    
+    return jsonify({'message': "위치가 업데이트 되었습니다."}), 200
