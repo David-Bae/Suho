@@ -37,7 +37,7 @@ def refresh_elders(current_user):
     elders_data = []
     for id in elder_ids:
         elder = DB.Elder.query.with_entities(DB.Elder.name, DB.Elder.phone, DB.Elder.birthdate).filter(DB.Elder.id == id).first()
-        elders_data.append({"name": elder[0], "phone": elder[1], "birthdate": str(elder[2])})
+        elders_data.append({"id": id ,"name": elder[0], "phone": elder[1], "birthdate": str(elder[2])})
     
     result = {
         "elders": elders_data,
@@ -45,4 +45,17 @@ def refresh_elders(current_user):
     }
     
     return jsonify(result), 200
+
+
+@guardian.route("/get-elder-location", methods=['GET'])
+@login_required
+def get_elder_location(current_user):
+    elder_id = request.json['elder_id']
     
+    location = DB.ElderLocation.query.filter(DB.ElderLocation.elder_id == elder_id).first()
+    
+    if location:    
+        return jsonify({"latitude": location.latitude, "longitude": location.longitude}), 200
+    else:
+        #! 아직 위치가 업데이트되지 않았으면 (0,0) 반환.
+        return jsonify({"latitude": 0.0, "longitude": 0.0})
