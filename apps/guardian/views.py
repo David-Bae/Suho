@@ -4,6 +4,7 @@ from apps.crud import models as DB
 from datetime import date, datetime, timedelta
 from apps.auth.views import login_required
 from apps.utils.utils import create_connection_code
+import json
 
 from apps.guardian import guardian_bp as guardian
 
@@ -22,3 +23,26 @@ def generate_guardian_code(current_user):
     db.session.commit()
 
     return jsonify({'connection_code': f'{connection_code.code}'}), 200
+
+
+
+@guardian.route('/refresh-elders', methods=['GET'])
+@login_required
+def refresh_elders(current_user):
+    #! current_user(보호자)와 연동된 고령자 ID 얻기.
+    elder_ids = DB.CareRelationship.query.with_entities(DB.CareRelationship.elder_id).filter(DB.CareRelationship.guardian_id == current_user.id).all()
+    elder_ids = [id[0] for id in elder_ids]
+    
+    #! Elder 테이블에서 고령자 정보(이름, 전화번호, 생년월일) 가져오기
+    elders_data = []
+    for id in elder_ids:
+        elder = DB.Elder.query.with_entities(DB.Elder.name, DB.Elder.phone, DB.Elder.birthdate).filter(DB.Elder.id == id).first()
+        elders_data.append({"name": elder[0], "phone": elder[1], "birthdate": str(elder[2])})
+    
+    result = {
+        "elders": elders_data,
+        "number_of_elders": len(elders_data)
+    }
+    
+    return jsonify(result), 200
+    
