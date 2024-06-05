@@ -109,6 +109,10 @@ class Guardian(User):
     보호자 정보를 저장하는 테이블
     """
     __tablename__ = 'guardian'
+    main_elder_id = db.Column(db.Integer, db.ForeignKey('elder.id'))
+    
+    def __init__(self):
+        self.main_elder_id = None
 
 
 class CareRelationship(db.Model):

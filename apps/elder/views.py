@@ -34,6 +34,8 @@ def add_guardian(current_user):
         return jsonify({'error': '이미 등록된 보호자입니다.'}), 409
     
     guardian = DB.Guardian.query.filter_by(id=connection_code.guardian_id).first()
+    if guardian.main_elder_id is None:
+        guardian.main_elder_id = current_user.id
 
     # CareRelationship에 추가.
     new_relationship = DB.CareRelationship(elder_id=current_user.id,
