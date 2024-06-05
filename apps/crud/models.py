@@ -240,3 +240,75 @@ class ElderLocation(db.Model):
         self.elder_id = elder_id
         self.latitude = latitude
         self.longitude = longitude
+        
+class Medicine(db.Model):
+    """
+    고령자가 복용해야하는 약 정보 테이블
+    """
+    __tablename__ = 'medicine'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    title = db.Column(db.String(32), nullable=False) # 약 이름.
+    elder_id = db.Column(db.Integer, db.ForeignKey('elder.id'), nullable=False)
+
+    start_year = db.Column(db.Integer, nullable=False)
+    start_month = db.Column(db.Integer, nullable=False)
+    start_day = db.Column(db.Integer, nullable=False)
+    end_year = db.Column(db.Integer, nullable=False)
+    end_month = db.Column(db.Integer, nullable=False)
+    end_day = db.Column(db.Integer, nullable=False)
+
+    medicine_period = db.Column(db.Integer, nullable=False)  # 0 == 일어나서 1회, 1 == 자기전 1회, 2 == 아침저녁, 3 == 아침점심저녁, 4 == 기타
+
+    memo = db.Column(db.String(64), nullable=True)
+    do_alarm = db.Column(db.Integer, nullable=False)  # 값(n) == n분전 사전알람
+    confirm_alarm_minute = db.Column(db.Integer, nullable=False)  # 값(n) == n분뒤 확인알람
+    is_complete = db.Column(db.Boolean, nullable=False)
+
+    def __init__(self, title, elder_id, start_year, start_month, start_day, end_year, end_month, end_day, 
+                 medicine_period, memo, do_alarm, confirm_alarm_minute, is_complete):
+        self.title = title
+        self.elder_id = elder_id
+        self.start_year = start_year
+        self.start_month = start_month
+        self.start_day = start_day
+        self.end_year = end_year
+        self.end_month = end_month
+        self.end_day = end_day
+        self.medicine_period = medicine_period
+        self.memo = memo
+        self.do_alarm = do_alarm
+        self.confirm_alarm_minute = confirm_alarm_minute
+        self.is_complete = is_complete
+
+
+class MedicineAlarm(db.Model):
+    __tablename__ = 'medicine_alarm'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    
+    #! 약, 고령자 외래키
+    medicine_id = db.Column(db.Integer, db.ForeignKey('medicine.id'), nullable=False)
+    elder_id = db.Column(db.Integer, db.ForeignKey('elder.id'), nullable=False)
+    
+    year = db.Column(db.Integer, nullable=False)
+    month = db.Column(db.Integer, nullable=False)
+    day = db.Column(db.Integer, nullable=False)
+    hour = db.Column(db.Integer, nullable=False)
+    minute = db.Column(db.Integer, nullable=False)
+
+    do_alarm = db.Column(db.Boolean, nullable=False)
+    confirm_alarm_minute = db.Column(db.Integer, nullable=False)
+    is_complete = db.Column(db.Boolean, nullable=False)
+    
+    def __init__(self, medicine_id, elder_id, year, month, day, hour, minute, do_alarm, confirm_alarm_minute, is_complete):
+        self.medicine_id = medicine_id
+        self.elder_id = elder_id
+        self.year = year
+        self.month = month
+        self.day = day
+        self.hour = hour
+        self.minute = minute
+        self.do_alarm = do_alarm
+        self.confirm_alarm_minute = confirm_alarm_minute
+        self.is_complete = is_complete
