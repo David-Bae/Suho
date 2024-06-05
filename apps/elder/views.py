@@ -66,3 +66,32 @@ def update_location(current_user):
     db.session.commit()
     
     return jsonify({'message': "위치가 업데이트 되었습니다."}), 200
+
+@elder.route("/toggle-permission", methods=['POST'])
+@login_required
+def toggle_permmission(current_user):
+    elder_id = current_user.id
+    guardian_id = request.json['guardian_id']
+    permission_type = request.json['permission_type']
+    
+    relationship = DB.CareRelationship.query.filter(
+        DB.CareRelationship.guardian_id == guardian_id,
+        DB.CareRelationship.elder_id == elder_id
+    ).first()
+    
+    if permission_type == 0:
+        relationship.perm_location = False if relationship.perm_location else True
+    elif permission_type == 1:
+        relationship.perm_schedule = False if relationship.perm_schedule else True
+    elif permission_type == 2:
+        relationship.perm_message = False if relationship.perm_message else True
+    elif permission_type == 3:
+        relationship.perm_report = False if relationship.perm_report else True
+    else:
+        relationship.perm_fall_detect = False if relationship.perm_fall_detect else True
+        
+    db.session.commit()
+    
+    permission_name = ['위치', '일정', '메시지', '보고서', '낙상감지']
+    
+    return jsonify({'message': f"{permission_name[permission_type]}권한이 변경되었습니다."}), 200

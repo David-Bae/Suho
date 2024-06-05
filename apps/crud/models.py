@@ -119,8 +119,14 @@ class CareRelationship(db.Model):
     __tablename__ = 'care_relationship'
     elder_id = db.Column(db.Integer, db.ForeignKey('elder.id'), nullable=False)
     guardian_id = db.Column(db.Integer, db.ForeignKey('guardian.id'), nullable=False)
-    elder_to_guardian_relation = db.Column(db.String(50))  # Elder가 Guardian을 어떻게 인식하는지 (예: 아들)
-    guardian_to_elder_relation = db.Column(db.String(50))  # Guardian이 Elder를 어떻게 인식하는지 (예: 아버지)
+    
+    #? 보호자에게 주어지는 권한.
+    perm_location = db.Column(db.Boolean, nullable=False)
+    perm_schedule = db.Column(db.Boolean, nullable=False)
+    perm_message = db.Column(db.Boolean, nullable=False)
+    perm_report = db.Column(db.Boolean, nullable=False)
+    perm_fall_detect = db.Column(db.Boolean, nullable=False)
+    
 
     # 합성키를 primary key로 지정
     __table_args__ = (PrimaryKeyConstraint('elder_id', 'guardian_id'), )
@@ -129,11 +135,14 @@ class CareRelationship(db.Model):
     elder = db.relationship('Elder', backref=db.backref('care_relationships', lazy=True))
     guardian = db.relationship('Guardian', backref=db.backref('care_relationships', lazy=True))
 
-    def __init__(self, elder_id, guardian_id, elder_to_guardian_relation=None, guardian_to_elder_relation=None):
+    def __init__(self, elder_id, guardian_id):
         self.elder_id = elder_id
         self.guardian_id = guardian_id
-        self.elder_to_guardian_relation = elder_to_guardian_relation
-        self.guardian_to_elder_relation = guardian_to_elder_relation
+        self.perm_location = True
+        self.perm_schedule = True
+        self.perm_message = True
+        self.perm_report = True
+        self.perm_fall_detect = True       
 
 
 class ConnectionCode(db.Model):
