@@ -141,3 +141,50 @@ def add_schedule_guardian(current_user):
     )
 
     return jsonify({'message': '일정이 추가되었습니다.'})
+
+
+@guardian.route("/add-message", methods=['POST'])
+@login_required
+def add_message(current_user):
+    #! 일정 추가 권한 있는지 확인.
+    guardian_id = current_user.id
+    elder_id = request.json['elder_id']
+
+    perm_message = DB.CareRelationship.query.with_entities(
+        DB.CareRelationship.perm_message
+    ).filter(
+        DB.CareRelationship.guardian_id == guardian_id,
+        DB.CareRelationship.elder_id == elder_id
+    ).first()[0]
+
+    if perm_message is False:
+            return jsonify({'message': '메시지 전달 권한이 없습니다.'}), 403
+
+    title = request.json.get('title')
+    year = request.json.get('year')
+    month = request.json.get('month')
+    day = request.json.get('day')
+    hour = request.json.get('hour')
+    minute = request.json.get('minute')
+    content = request.json.get('content')
+    alarm_type = request.json.get('alarm_type')
+
+    if not all([elder_id, title, year, month, day, hour, minute, content, alarm_type is not None]):
+        return jsonify({'message': '데이터가 부족합니다.'}), 400
+
+    new_message = DB.Message(
+        elder_id=elder_id,
+        guardian_id=guardian_id,
+        title=title,
+        year=year,
+        month=month,
+        day=day,
+        hour=hour,
+        minute=minute,
+        content=content,
+        alarm_type=alarm_type
+    )
+    db.session.add(new_message)
+    db.session.commit()
+
+    return jsonify({'message': '메시지가 추가되었습니다.'}), 200

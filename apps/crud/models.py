@@ -354,3 +354,34 @@ class Schedule(db.Model):
         self.do_alarm = do_alarm
         self.confirm_alarm_minute = confirm_alarm_minute
         self.is_complete = False
+
+
+class Message(db.Model):
+    __tablename__ = 'message'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    elder_id = db.Column(db.Integer, db.ForeignKey('elder.id'), nullable=False)
+    guardian_id = db.Column(db.Integer, db.ForeignKey('guardian.id'), nullable=False)
+
+    title = db.Column(db.String(64), nullable=False)
+    year = db.Column(db.Integer, nullable=False)
+    month = db.Column(db.Integer, nullable=False)
+    day = db.Column(db.Integer, nullable=False)
+    hour = db.Column(db.Integer, nullable=False)
+    minute = db.Column(db.Integer, nullable=False)
+    content = db.Column(db.String(256), nullable=False)
+    do_alarm = db.Column(db.Boolean, nullable=False)
+    alarm_type = db.Column(db.Boolean, nullable=False)  # true == call, false == text
+
+    def __init__(self, elder_id, guardian_id, title, year, month, day, hour, minute, content, alarm_type):
+        self.elder_id = elder_id
+        self.guardian_id = guardian_id
+        self.title = title
+        self.year = year
+        self.month = month
+        self.day = day
+        self.hour = hour
+        self.minute = minute
+        self.content = content
+        self.do_alarm = True
+        self.alarm_type = alarm_type
