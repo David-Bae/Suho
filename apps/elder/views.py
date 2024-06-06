@@ -8,7 +8,7 @@ from apps.app import db
 from datetime import date, datetime, timedelta
 from apps.auth.views import login_required
 from apps.elder import elder_bp as elder
-from apps.utils import utils
+from apps.utils.utils import add_medicine
 
 
 @elder.route("/", methods=['GET'])
@@ -117,7 +117,7 @@ def add_medicine_elder(current_user):
     do_alarm = request.json['do_alarm']  # 값(n) == n분전 사전알람
     confirm_alarm_minute = request.json['confirm_alarm_minute']  # 값(n) == n분뒤 확인알람
 
-    utils.add_medicine(elder_id=elder_id, title=title, start_year=start_year, start_month=start_month,
+    add_medicine(elder_id=elder_id, title=title, start_year=start_year, start_month=start_month,
                        start_day=start_day, end_year=end_year, end_month=end_month, end_day=end_day,
                        medicine_period=medicine_period, memo=memo, do_alarm=do_alarm, confirm_alarm_minute=confirm_alarm_minute)
 
