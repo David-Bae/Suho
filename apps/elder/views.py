@@ -8,7 +8,7 @@ from apps.app import db
 from datetime import date, datetime, timedelta
 from apps.auth.views import login_required
 from apps.elder import elder_bp as elder
-from apps.utils.utils import add_medicine
+from apps.utils.common import add_medicine, add_schedule
 
 
 @elder.route("/", methods=['GET'])
@@ -122,3 +122,46 @@ def add_medicine_elder(current_user):
                        medicine_period=medicine_period, memo=memo, do_alarm=do_alarm, confirm_alarm_minute=confirm_alarm_minute)
 
     return jsonify({'message': '약이 추가되었습니다.'})
+
+
+@elder.route("/add-schedule", methods=['POST'])
+@login_required
+def add_schedule_elder(current_user):
+    elder_id = current_user.id
+    title = request.json['title']
+
+    start_year = request.json['start_year']
+    start_month = request.json['start_month']
+    start_day = request.json['start_day']
+    start_hour = request.json['start_hour']
+    start_minute = request.json['start_minute']
+
+    end_year = request.json['end_year']
+    end_month = request.json['end_month']
+    end_day = request.json['end_day']
+    end_hour = request.json['end_hour']
+    end_minute = request.json['end_minute']
+
+    memo = request.json['memo']
+    do_alarm = request.json['do_alarm']  # 값(n) == n분전 사전알람
+    confirm_alarm_minute = request.json['confirm_alarm_minute']  # 값(n) == n분뒤 확인알람
+
+    add_schedule(
+        elder_id=elder_id,
+        title=title,
+        start_year=start_year,
+        start_month=start_month,
+        start_day=start_day,
+        start_hour=start_hour,
+        start_minute=start_minute,
+        end_year=end_year,
+        end_month=end_month,
+        end_day=end_day,
+        end_hour=end_hour,
+        end_minute=end_minute,
+        memo=memo,
+        do_alarm=do_alarm,
+        confirm_alarm_minute=confirm_alarm_minute
+    )
+
+    return jsonify({'message': '일정이 추가되었습니다.'})

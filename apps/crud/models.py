@@ -309,3 +309,48 @@ class MedicineAlarm(db.Model):
         self.do_alarm = do_alarm
         self.confirm_alarm_minute = confirm_alarm_minute
         self.is_complete = False
+        
+
+class Schedule(db.Model):
+    __tablename__ = 'schedule'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    elder_id = db.Column(db.Integer, db.ForeignKey('elder.id'), nullable=False)
+    title = db.Column(db.String(64), nullable=False)
+
+    start_year = db.Column(db.Integer, nullable=False)
+    start_month = db.Column(db.Integer, nullable=False)
+    start_day = db.Column(db.Integer, nullable=False)
+    start_hour = db.Column(db.Integer, nullable=False)
+    start_minute = db.Column(db.Integer, nullable=False)
+
+    end_year = db.Column(db.Integer, nullable=False)
+    end_month = db.Column(db.Integer, nullable=False)
+    end_day = db.Column(db.Integer, nullable=False)
+    end_hour = db.Column(db.Integer, nullable=False)
+    end_minute = db.Column(db.Integer, nullable=False)
+
+    memo = db.Column(db.String(64), nullable=True)
+    do_alarm = db.Column(db.Integer, nullable=False)  # 값(n) == n분전 사전알람
+    confirm_alarm_minute = db.Column(db.Integer, nullable=False)  # 값(n) == n분뒤 확인알람
+    is_complete = db.Column(db.Boolean, nullable=False, default=False)
+
+    def __init__(self, elder_id, title, start_year, start_month, start_day, start_hour, start_minute,
+                 end_year, end_month, end_day, end_hour, end_minute, memo, do_alarm,
+                 confirm_alarm_minute):
+        self.elder_id = elder_id
+        self.title = title
+        self.start_year = start_year
+        self.start_month = start_month
+        self.start_day = start_day
+        self.start_hour = start_hour
+        self.start_minute = start_minute
+        self.end_year = end_year
+        self.end_month = end_month
+        self.end_day = end_day
+        self.end_hour = end_hour
+        self.end_minute = end_minute
+        self.memo = memo
+        self.do_alarm = do_alarm
+        self.confirm_alarm_minute = confirm_alarm_minute
+        self.is_complete = False
