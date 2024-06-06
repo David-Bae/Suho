@@ -102,7 +102,7 @@ def add_schedule_guardian(current_user):
     ).first()[0]
 
     if perm_schedule is False:
-            return jsonify({'error': '일정 추가 권한이 없습니다.'}), 403
+            return jsonify({'message': '일정 추가 권한이 없습니다.'}), 403
 
     title = request.json['title']
 
