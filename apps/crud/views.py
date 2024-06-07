@@ -105,8 +105,6 @@ def update_all(current_user):
     else:
         user_type = False
 
-    dummy = 1
-
     #! 고령자라면 
 
 
@@ -117,7 +115,7 @@ def update_all(current_user):
         "SeniorInfo": json_SeniorInfo(current_user),
         "MessageItem": json_MessageItem(current_user),
         "ScheduleItem": json_ScheduleItem(current_user),
-        "MedicineAlarmItem": dummy,
+        "MedicineAlarmItem": json_MedicineAlarmItem(current_user),
         "MedicineItem": json_MedicineItem(current_user)
     }
 

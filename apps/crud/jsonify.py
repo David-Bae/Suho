@@ -235,6 +235,51 @@ def json_MessageItem(user: DB.Elder):
     return MessageItem
 
 
+def json_MedicineAlarmItem(user: DB.Elder):
+    MedicineAlarmItem = {
+        "count": 0,
+        "lists": []
+    }
+
+    if isinstance(user, DB.Elder):
+        elder_id = user.id
+    else:
+        elder_id = user.main_elder_id
 
 
 
+
+    medicineAlarms = DB.MedicineAlarm.query.filter(
+        DB.MedicineAlarm.elder_id == elder_id
+    ).order_by(
+        DB.MedicineAlarm.year,
+        DB.MedicineAlarm.month,
+        DB.MedicineAlarm.day,
+        DB.MedicineAlarm.hour,
+        DB.MedicineAlarm.minute
+    ).all()
+
+    MedicineAlarmItem['count'] = len(medicineAlarms)
+
+    for alarm in medicineAlarms:
+        medicine = DB.Medicine.query.filter(
+            DB.Medicine.id == alarm.medicine_id
+        ).first()
+        mItem = {
+            "id": alarm.id,
+            "title": medicine.title,
+            "year": alarm.year,
+            "month": alarm.month,
+            "day": alarm.day,
+            "hour": alarm.hour,
+            "minute": alarm.minute,
+            "memo": alarm.memo,
+            "doAlarm": alarm.do_alarm,
+            "confirmAlarmMinute": alarm.confirm_alarm_minute,
+            "isComplete": alarm.is_complete
+        }
+
+
+        MedicineAlarmItem['lists'].append(mItem)
+
+    return MedicineAlarmItem
