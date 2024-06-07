@@ -155,6 +155,10 @@ def json_MedicineItem(user: DB.Elder):
 
     medicines = DB.Medicine.query.filter(
         DB.Medicine.elder_id == elder_id
+    ).order_by(
+        DB.Medicine.start_year,
+        DB.Medicine.start_month,
+        DB.Medicine.start_day
     ).all()
 
     MedicineItem['count'] = len(medicines)
@@ -178,3 +182,59 @@ def json_MedicineItem(user: DB.Elder):
         MedicineItem['lists'].append(mItem)
 
     return MedicineItem
+
+
+def json_MessageItem(user: DB.Elder):
+    MessageItem = {
+        "count": 0,
+        "lists": []
+    }
+
+    #? 고령자는 고령자가 받은 메시지만
+    if isinstance(user, DB.Elder):
+        messages = DB.Message.query.filter(
+            DB.Message.elder_id == user.id
+        ).order_by(
+            DB.Message.year,
+            DB.Message.month,
+            DB.Message.day,
+            DB.Message.hour,
+            DB.Message.minute
+        ).all()
+    #? 보호자는 보호자가 main 고령자에게 보낸 메시지만
+    else:
+        messages = DB.Message.query.filter(
+            DB.Message.elder_id == user.main_elder_id,
+            DB.Message.guardian_id == user.id
+        ).order_by(
+            DB.Message.year,
+            DB.Message.month,
+            DB.Message.day,
+            DB.Message.hour,
+            DB.Message.minute
+        ).all()
+
+    MessageItem['count'] = len(messages)
+
+    for msg in messages:
+        mItem = {
+            "id": msg.id,
+            "title": msg.title,
+            "year": msg.year,
+            "month": msg.month,
+            "day": msg.day,
+            "hour": msg.hour,
+            "minute": msg.minute,
+            "content": msg.content,
+            "doAlarm": msg.do_alarm,
+            "alarmType": msg.alarm_type
+        }
+
+        MessageItem['lists'].append(mItem)
+
+    return MessageItem
+
+
+
+
+
