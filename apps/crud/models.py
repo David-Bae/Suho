@@ -137,23 +137,34 @@ class Guardian(User):
     """
     __tablename__ = 'guardian'
     main_elder_id = db.Column(db.Integer, db.ForeignKey('elder.id'))
-    
-    def __init__(self):
+
+    #! ProtectorSetting
+    completeScheduleAlarm = db.Column(db.Boolean, default=True)
+    fallDetectAlarm = db.Column(db.Boolean, default=True)
+    getReportAlarm = db.Column(db.Boolean, default=True)
+
+    def __init__(self, name, password_hash, phone, birthdate, gender=None, residence=None):
+        super().__init__(phone, password_hash, name, birthdate, gender, residence)
         self.main_elder_id = None
+
+        #! ProtectorSetting
+        self.completeScheduleAlarm = True
+        self.fallDetectAlarm = True
+        self.getReportAlarm = True
 
 
 class CareRelationship(db.Model):
     __tablename__ = 'care_relationship'
     elder_id = db.Column(db.Integer, db.ForeignKey('elder.id'), nullable=False)
     guardian_id = db.Column(db.Integer, db.ForeignKey('guardian.id'), nullable=False)
-    
+
     #? 보호자에게 주어지는 권한.
     perm_location = db.Column(db.Boolean, nullable=False)
     perm_schedule = db.Column(db.Boolean, nullable=False)
     perm_message = db.Column(db.Boolean, nullable=False)
     perm_report = db.Column(db.Boolean, nullable=False)
     perm_fall_detect = db.Column(db.Boolean, nullable=False)
-    
+
 
     # 합성키를 primary key로 지정
     __table_args__ = (PrimaryKeyConstraint('elder_id', 'guardian_id'), )
@@ -169,7 +180,7 @@ class CareRelationship(db.Model):
         self.perm_schedule = True
         self.perm_message = True
         self.perm_report = True
-        self.perm_fall_detect = True       
+        self.perm_fall_detect = True
 
 
 class ConnectionCode(db.Model):
