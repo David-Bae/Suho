@@ -3,6 +3,7 @@ from apps.auth.views import login_required
 from apps.crud import models as DB
 from apps.app import db
 from apps.crud import crud_bp as crud
+from apps.crud.jsonify import *
 
 @crud.route("/")
 def index():
@@ -109,17 +110,8 @@ def update_all(current_user):
     #! 고령자라면 
 
 
-
-
-
-
-
-
-
-
-
     response = {
-        "SeniorSetting": dummy,
+        "SeniorSetting": json_SeniorSetting(current_user),
         "ProtectorSetting": dummy,
         "ProtectorInfo": dummy,
         "SeniorInfo": dummy,
