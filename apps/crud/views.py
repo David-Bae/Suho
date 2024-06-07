@@ -92,3 +92,41 @@ def add_user():
     db.session.commit()
 
     return jsonify({'message': '회원가입이 완료되었습니다.'}), 200
+
+
+#! 고령자 & 보호자 공통 새로고침 API
+@crud.route("/update-all", methods=['GET'])
+@login_required
+def update_all(current_user):
+    #! User가 고령자인지 보호자인지 확인.
+    if isinstance(current_user, DB.Elder):
+        user_type = True
+    else:
+        user_type = False
+
+    dummy = 1
+
+    #! 고령자라면 
+
+
+
+
+
+
+
+
+
+
+
+    response = {
+        "SeniorSetting": dummy,
+        "ProtectorSetting": dummy,
+        "ProtectorInfo": dummy,
+        "SeniorInfo": dummy,
+        "MessageItem": dummy,
+        "ScheduleItem": dummy,
+        "MedicineAlarmItem": dummy,
+        "MedicineItem": dummy
+    }
+
+    return jsonify(response), 200

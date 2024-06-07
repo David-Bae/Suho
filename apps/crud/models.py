@@ -43,10 +43,37 @@ class Elder(User):
     """
     counseling_type = db.Column(db.Integer, nullable=False)
 
+    #! SeniorSetting
+    addScheduleFromProtectorAlarm = db.Column(db.Boolean, default=True)
+    addMessageFromProtectorAlarm = db.Column(db.Boolean, default=True)
+    isFallDetect = db.Column(db.Boolean, default=False)
+    isGetWellnessQuestion = db.Column(db.Boolean, default=True)
+    makeWellnessReport = db.Column(db.Boolean, default=True)
+    detectFallEvent = db.Column(db.Boolean, default=True)
+    alarmFallSuspicious = db.Column(db.Boolean, default=True)
+    realTimeFallReport = db.Column(db.Boolean, default=True)
+    isCallAlarm = db.Column(db.Boolean, default=True)
+    choiceVoice = db.Column(db.Integer, default=0)
+    memo = db.Column(db.String(128), default="")
+
+
     def __init__(self, phone, password_hash, name, birthdate, gender=None, residence=None, current_location=None):
         super().__init__(phone, password_hash, name, birthdate, gender, residence)
         self.current_location = current_location
         self.counseling_type = 0
+
+        #! SeniorSetting
+        self.addScheduleFromProtectorAlarm = True
+        self.addMessageFromProtectorAlarm = True
+        self.isFallDetect = False
+        self.isGetWellnessQuestion = True
+        self.makeWellnessReport = True
+        self.detectFallEvent = True
+        self.alarmFallSuspicious = True
+        self.realTimeFallReport = True
+        self.isCallAlarm = True
+        self.choiceVoice = 0
+        self.memo = "default memo"
 
     def update_counseling_type(self):
         counseling_types = [0, 1, 2, 3]
