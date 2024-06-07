@@ -18,7 +18,6 @@ from apps.auth import auth_bp as auth
 
 
 
-
 @auth.route("/")
 def index():
     return "Hello, Auth!"

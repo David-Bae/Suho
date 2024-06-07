@@ -93,3 +93,50 @@ def json_SeniorInfo(user: DB.Guardian):
         SeniorInfo['lists'].append(sInfo)
 
     return SeniorInfo
+
+
+def json_ScheduleItem(user: DB.Elder):
+    ScheduleItem = {
+        "count": 0,
+        "lists": []
+    }
+
+    if isinstance(user, DB.Elder):
+        elder_id = user.id
+    else:
+        elder_id = user.main_elder_id
+
+    schedules = DB.Schedule.query.filter(
+        DB.Schedule.elder_id == elder_id
+    ).order_by(
+        DB.Schedule.start_year,
+        DB.Schedule.start_month,
+        DB.Schedule.start_day,
+        DB.Schedule.start_hour,
+        DB.Schedule.start_minute
+    ).all()
+
+    ScheduleItem['count'] = len(schedules)
+
+    for schedule in schedules:
+        sItem = {
+            "id": schedule.id,
+            "title": schedule.title,
+            "startYear": schedule.start_year,
+            "startMonth": schedule.start_month,
+            "startDay": schedule.start_day,
+            "startHour": schedule.start_hour,
+            "startMinute": schedule.start_minute,
+            "endYear": schedule.end_year,
+            "endMonth": schedule.end_month,
+            "endDay": schedule.end_day,
+            "endHour": schedule.end_hour,
+            "endMinute": schedule.end_minute,
+            "memo": schedule.memo,
+            "doAlarm": schedule.do_alarm,
+            "confirmAlarmMinute": schedule.confirm_alarm_minute,
+            "isComplete": schedule.is_complete
+        }
+        ScheduleItem['lists'].append(sItem)
+
+    return ScheduleItem
