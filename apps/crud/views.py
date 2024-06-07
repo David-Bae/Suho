@@ -113,7 +113,7 @@ def update_all(current_user):
     response = {
         "SeniorSetting": json_SeniorSetting(current_user),
         "ProtectorSetting": json_ProtectorSetting(current_user),
-        "ProtectorInfo": dummy,
+        "ProtectorInfo": json_ProtectorInfo(current_user),
         "SeniorInfo": dummy,
         "MessageItem": dummy,
         "ScheduleItem": dummy,
@@ -122,3 +122,8 @@ def update_all(current_user):
     }
 
     return jsonify(response), 200
+
+
+@crud.route("/test", methods=['GET'])
+def ttttt():
+    return jsonify({"list": []}), 200

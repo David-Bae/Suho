@@ -165,6 +165,9 @@ class CareRelationship(db.Model):
     perm_report = db.Column(db.Boolean, nullable=False)
     perm_fall_detect = db.Column(db.Boolean, nullable=False)
 
+    #! memo
+    memo_elder = db.Column(db.String(128))
+    memo_guardian = db.Column(db.String(128))
 
     # 합성키를 primary key로 지정
     __table_args__ = (PrimaryKeyConstraint('elder_id', 'guardian_id'), )
@@ -231,7 +234,7 @@ class CustomQuestion(db.Model):
     보호자가 등록한 개인적인 질문들
     """
     __tablename__ = 'custom_questions'
-    
+
     id = db.Column(db.Integer, primary_key=True)
     elder_id = db.Column(db.Integer, db.ForeignKey('elder.id'), nullable=False)
     guardian_id = db.Column(db.Integer, db.ForeignKey('guardian.id'), nullable=False)
@@ -247,7 +250,7 @@ class QuestionAnswer(db.Model):
     보호자가 등록한 개인적인 질문들에 대한 답변
     """
     __tablename__ = 'question_answer'
-    
+
     id = db.Column(db.Integer, primary_key=True)
     elder_id = db.Column(db.Integer, db.ForeignKey('elder.id'), nullable=False)
     #guardian_id = db.Column(db.Integer, db.ForeignKey('guardian.id'), nullable=False) #! 여러명의 보호자가 질문한 것 한번에 처리.
@@ -262,23 +265,23 @@ class QuestionAnswer(db.Model):
         self.question = question
         self.answer = answer
         self.date = date
-        
+
 class ElderLocation(db.Model):
     """
     고령자 실시간 위치를 저장하는 테이블
-    """    
+    """
     __tablename__ = 'elder_location'
-    
+
     id = db.Column(db.Integer, primary_key=True)
     elder_id = db.Column(db.Integer, db.ForeignKey('elder.id'), nullable=False)
     latitude = db.Column(db.Float, nullable=False)
     longitude = db.Column(db.Float, nullable=False)
-    
+
     def __init__(self, elder_id, latitude, longitude):
         self.elder_id = elder_id
         self.latitude = latitude
         self.longitude = longitude
-        
+
 class Medicine(db.Model):
     """
     고령자가 복용해야하는 약 정보 테이블
@@ -321,11 +324,11 @@ class MedicineAlarm(db.Model):
     __tablename__ = 'medicine_alarm'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    
+
     #! 약, 고령자 외래키
     medicine_id = db.Column(db.Integer, db.ForeignKey('medicine.id'), nullable=False)
     elder_id = db.Column(db.Integer, db.ForeignKey('elder.id'), nullable=False)
-    
+
     year = db.Column(db.Integer, nullable=False)
     month = db.Column(db.Integer, nullable=False)
     day = db.Column(db.Integer, nullable=False)
@@ -335,7 +338,7 @@ class MedicineAlarm(db.Model):
     do_alarm = db.Column(db.Boolean, nullable=False)
     confirm_alarm_minute = db.Column(db.Integer, nullable=False)
     is_complete = db.Column(db.Boolean, nullable=False)
-    
+
     def __init__(self, medicine_id, elder_id, year, month, day, hour, minute, do_alarm, confirm_alarm_minute):
         self.medicine_id = medicine_id
         self.elder_id = elder_id
@@ -347,7 +350,7 @@ class MedicineAlarm(db.Model):
         self.do_alarm = do_alarm
         self.confirm_alarm_minute = confirm_alarm_minute
         self.is_complete = False
-        
+
 
 class Schedule(db.Model):
     __tablename__ = 'schedule'
