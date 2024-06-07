@@ -118,12 +118,7 @@ def update_all(current_user):
         "MessageItem": dummy,
         "ScheduleItem": json_ScheduleItem(current_user),
         "MedicineAlarmItem": dummy,
-        "MedicineItem": dummy
+        "MedicineItem": json_MedicineItem(current_user)
     }
 
     return jsonify(response), 200
-
-
-@crud.route("/test", methods=['GET'])
-def ttttt():
-    return jsonify({"list": []}), 200

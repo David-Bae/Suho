@@ -140,3 +140,41 @@ def json_ScheduleItem(user: DB.Elder):
         ScheduleItem['lists'].append(sItem)
 
     return ScheduleItem
+
+
+def json_MedicineItem(user: DB.Elder):
+    MedicineItem = {
+        "count": 0,
+        "lists": []
+    }
+
+    if isinstance(user, DB.Guardian):
+        elder_id = user.main_elder_id
+    else:
+        elder_id = user.id
+
+    medicines = DB.Medicine.query.filter(
+        DB.Medicine.elder_id == elder_id
+    ).all()
+
+    MedicineItem['count'] = len(medicines)
+
+    for medicine in medicines:
+        mItem = {
+            "id": medicine.id,
+            "title": medicine.title,  # Assuming there's a title field in the medicine model
+            "startYear": medicine.start_year,
+            "startMonth": medicine.start_month,
+            "startDay": medicine.start_day,
+            "endYear": medicine.end_year,
+            "endMonth": medicine.end_month,
+            "endDay": medicine.end_day,
+            "medicinePeriod": medicine.medicine_period,
+            "memo": medicine.memo,
+            "doAlarm": medicine.do_alarm,
+            "confirmAlarmMinute": medicine.confirm_alarm_minute,
+        }
+
+        MedicineItem['lists'].append(mItem)
+
+    return MedicineItem
