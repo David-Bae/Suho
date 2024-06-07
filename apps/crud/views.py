@@ -114,7 +114,7 @@ def update_all(current_user):
         "SeniorSetting": json_SeniorSetting(current_user),
         "ProtectorSetting": json_ProtectorSetting(current_user),
         "ProtectorInfo": json_ProtectorInfo(current_user),
-        "SeniorInfo": dummy,
+        "SeniorInfo": json_SeniorInfo(current_user),
         "MessageItem": dummy,
         "ScheduleItem": dummy,
         "MedicineAlarmItem": dummy,

@@ -63,3 +63,33 @@ def json_ProtectorInfo(user: DB.Elder):
         ProtectorInfo['lists'].append(pInfo)
 
     return ProtectorInfo
+
+def json_SeniorInfo(user: DB.Guardian):
+    SeniorInfo = {
+        "count": 0,
+        "lists": []
+    }
+
+        #? 고령자는 바로 반환
+    if isinstance(user, DB.Elder):
+        return SeniorInfo
+
+    relationships = DB.CareRelationship.query.filter(
+        DB.CareRelationship.guardian_id == user.id
+    ).all()
+
+    for relationship in relationships:
+        elder = DB.Elder.query.filter(
+            DB.Elder.id == relationship.elder_id
+        ).first()
+
+        sInfo = {
+            "id": elder.id,
+            "name": elder.name,
+            "callNumber": elder.phone
+        }
+
+        SeniorInfo['count'] += 1
+        SeniorInfo['lists'].append(sInfo)
+
+    return SeniorInfo
