@@ -112,7 +112,7 @@ def update_all(current_user):
 
     response = {
         "SeniorSetting": json_SeniorSetting(current_user),
-        "ProtectorSetting": dummy,
+        "ProtectorSetting": json_ProtectorSetting(current_user),
         "ProtectorInfo": dummy,
         "SeniorInfo": dummy,
         "MessageItem": dummy,
