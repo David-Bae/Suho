@@ -336,7 +336,7 @@ class MedicineAlarm(db.Model):
     minute = db.Column(db.Integer, nullable=False)
 
     memo = db.Column(db.String(64))
-    do_alarm = db.Column(db.Boolean, nullable=False)
+    do_alarm = db.Column(db.Integer, nullable=False)
     confirm_alarm_minute = db.Column(db.Integer, nullable=False)
     is_complete = db.Column(db.Boolean, nullable=False)
 
