@@ -48,7 +48,7 @@ def refresh_elders(current_user):
     return jsonify(result), 200
 
 
-@guardian.route("/get-elder-location", methods=['GET'])
+@guardian.route("/get-elder-location", methods=['POST'])
 @login_required
 def get_elder_location(current_user):
     elder_id = request.json['elder_id']
