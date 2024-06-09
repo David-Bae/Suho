@@ -54,3 +54,29 @@ def get_current_time_seoul():
     now = now.astimezone(ZoneInfo('Asia/Seoul'))
 
     return now
+
+# 해당월의 시작날과 마지막날을 반환.
+month_end_days = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+def get_date_range(month_str):
+    year, month = map(int, month_str.split('-'))
+    
+    # 윤년 계산 (2월이 29일이 되는 경우)
+    if month == 2 and (year % 4 == 0 and (year % 100 != 0 or year % 400 == 0)):
+        end_day = 29
+    else:
+        end_day = month_end_days[month - 1]
+    
+    start_date = date(year, month, 1)
+    end_date = date(year, month, end_day)
+    
+    return start_date, end_date
+
+# year, month 를 "YYYY-MM" 형식으로 변환.
+def format_year_month(year, month):
+    year = str(year)
+    month = str(month)
+    
+    if len(month) == 1:
+        month = '0' + month
+    
+    return f"{year}-{month}"

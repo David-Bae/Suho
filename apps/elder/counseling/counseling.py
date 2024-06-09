@@ -115,48 +115,6 @@ def answer_daily_counseling(current_user):
     return jsonify({'message': f'{score}'}), 200
 
 
-@elder.route("/monthly-evaluation", methods=['POST'])
-@login_required
-def get_monthly_evaluation(current_user):
-    """
-    월별 평가를 저장하는 DB를 만들어.
-    'monthly-evaluation' API가 호출되었을 때,
-    해당월 점수가 계산이 안되어있으면 -> 해당 월 점수를 계산 후 반환
-    해당월 점수가 계산이 되어있으면 -> 해당 월 점수 반환
-    """
-    #! 클라이언트에게 'YYYY-MM' 정보를 받는다.
-    month = request.json['year_month']
-
-    #! 해당 월의 월별평가가 존재하는지 검색
-    monthly_evaluation = DB.MonthlyEvaluation.query.filter_by(elder_id=current_user.id, month=month).first()
-
-    #! 월별평가가 존재하지 않으면 월별평가 계산
-    if monthly_evaluation is None:
-        scores = []
-        for i in range(4):
-            score = db.session.query(func.avg(DB.CounselingScore.score)).filter(
-                DB.CounselingScore.counseling_type == i,
-                text(f"DATE_FORMAT(date, '%Y-%m') = '{month}'")                 
-            ).scalar()
-
-            if score is not None:
-                score = round(score, 1)
-            scores.append(score)
-
-        monthly_evaluation = DB.MonthlyEvaluation(current_user.id, month,
-                                scores[0], scores[1], scores[2], scores[3])
-        db.session.add(monthly_evaluation)
-        db.session.commit()
-
-    #! 월별평가 반환
-    return jsonify({'month': f'{monthly_evaluation.month}',
-                    'physical_score': f'{monthly_evaluation.physical_score}',
-                    'mental_score': f'{monthly_evaluation.mental_score}',
-                    'social_score': f'{monthly_evaluation.social_score}',
-                    'lifestyle_score': f'{monthly_evaluation.lifestyle_score}',
-                    }), 200 
-
-
 #? AI 상담은 다수의 사용자가 동시에 요청할 수 있다.(제한 없음)
 #? WebSocket을 사용하지 않고 캐시로 구현.
 ID_CACHE = []
