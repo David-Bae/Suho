@@ -103,9 +103,9 @@ def answer_daily_counseling(current_user):
     score = evaluation_functions[elder.counseling_type](answers)
 
     #! 점수 DB에 저장.
-    new_score = DB.CounselingScore(elder_id=elder.id, 
+    new_score = DB.CounselingScore(elder_id=elder.id,
                 counseling_type=elder.counseling_type, score=score)
-    
+
     db.session.add(new_score)
     db.session.commit()
 

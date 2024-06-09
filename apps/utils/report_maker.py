@@ -74,7 +74,7 @@ current_directory = os.path.dirname(current_file_path)
 PDF_RESOURCE_DIR = os.path.join(current_directory, 'pdfResources')
 
 #! 생성된 보고서를 저장하는 폴더 (절대주소 사용)
-REPORT_DIR = '/usr/src/data/report'
+REPORT_DIR = '/usr/src/suho_data/report'
 #####################################################################################
 
 def draw(name, date, sex, scores, texts, filename):
@@ -174,3 +174,5 @@ def pdf2img(filename):
     import pdf2image
     im = pdf2image.convert_from_path(os.path.join(REPORT_DIR, f'{filename}.pdf'))
     im[0].save(os.path.join(REPORT_DIR, f'{filename}.png'), 'PNG')
+    
+    return os.path.join(REPORT_DIR, f'{filename}.png')

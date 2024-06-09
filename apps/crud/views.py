@@ -31,36 +31,26 @@ def check_db():
 def hello_yuju():
     return "Hello, YuJu!"
 
-#! 삭제 예정
+#! sudo
 @crud.route("/add-qa", methods=['POST'])
 def add_qa():
     qas = request.json # 여러 개의 질문-답변 쌍을 포함한 리스트
 
     for qa in qas:
         elder_id = qa['elder_id']
-        guardian_id = qa['guardian_id']
         question = qa['question']
         answer = qa['answer']
         date = qa['date']
 
-        new_qa = DB.QuestionAnswer(elder_id, guardian_id, question, answer, date)
+        new_qa = DB.QuestionAnswer(elder_id, question, answer, date)
         db.session.add(new_qa)
 
     db.session.commit()
 
     return jsonify({'message': '질문-답변이 추가되었습니다.'}), 200
 
-#! 삭제 예정
-@crud.route("/add-elder", methods=['POST'])
-def add_elder():
-    user = DB.Elder(name="이순철", password_hash="dummy",
-                            phone="010-1234-5678", birthdate="1952-05-22")
 
-    db.session.add(user)
-    db.session.commit()
-
-    return jsonify({'message': '완료'}), 200
-
+#! sudo
 #! 전화번호 인증 없이 회원가입할 수 있는 API.
 #! 실제로 사용하는 API 아님.
 from datetime import date
@@ -99,15 +89,6 @@ def add_user():
 @crud.route("/update-all", methods=['GET'])
 @login_required
 def update_all(current_user):
-    #! User가 고령자인지 보호자인지 확인.
-    if isinstance(current_user, DB.Elder):
-        user_type = True
-    else:
-        user_type = False
-
-    #! 고령자라면 
-
-
     response = {
         "SeniorSetting": json_SeniorSetting(current_user),
         "ProtectorSetting": json_ProtectorSetting(current_user),

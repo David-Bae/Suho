@@ -98,8 +98,10 @@ def analysisGPT(elder_name, questions, user_answers, date):
             HumanMessage(content=prompt.format(elder_name=elder_name, QA=QA))
         ]
     )
-
-    return result.content
+    
+    current_status_analysis, care_recommendations = result.content.split('\n\n')
+    
+    return current_status_analysis, care_recommendations
 
 
 def TTS(text):
