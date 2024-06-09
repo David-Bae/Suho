@@ -9,6 +9,7 @@ from apps.utils import chatbot as chat
 from apps.utils import utils
 from apps.utils import report_maker as rp
 from sqlalchemy import func, extract
+import os
 
 @guardian.route('/counseling', methods=['GET'])
 def index_counseling():
@@ -45,7 +46,13 @@ def make_report(current_user):
     year = request.json['year']
     month = request.json['month']
     year_month = utils.format_year_month(year, month)
-    
+
+    #! 보고서 파일이 이미 존재하면 바로 반환.
+    report_filename = f'{elder_id}_{year_month}'
+    image_path = os.path.join(rp.REPORT_DIR, f'{report_filename}.png')
+    if os.path.exists(image_path):
+        return send_file(image_path, mimetype='image/png'), 200
+
     #! GPT 분석
     start_date, end_date = utils.get_date_range(year_month)
 
@@ -67,7 +74,7 @@ def make_report(current_user):
         qa_date.append(qa.date)
 
     current_status_analysis, care_recommendations = chat.analysisGPT(elder_name, questions, answers, qa_date)
-    
+
     #! 정형화된 검사
     scores = []
     for i in range(4):
@@ -79,14 +86,13 @@ def make_report(current_user):
         ).scalar()
 
         scores.append(round(avg_score))
-    
+
     #! 보고서 만들기 (PDF & PNG)
-    report_filename = f'{elder_id}_{year_month}'
     args = [elder_name, year_month, 0, scores, [current_status_analysis, care_recommendations], report_filename]
-    
+
     rp.draw(*args)
     image_path = rp.pdf2img(report_filename)
-    
+
     #! 보고서 반환 (PNG)
     try:
         return send_file(image_path, mimetype='image/png'), 200
