@@ -3,12 +3,12 @@ from apps.auth.views import login_required
 from apps.crud import models as DB
 from apps.app import db
 from flask import request, jsonify, send_file
-from sqlalchemy import func, text
 import os
 import json
 from apps.utils import chatbot as chat
-#from werkzeug.utils import secure_filename
+from apps.utils.ser import SER, add_ser_to_db
 from gtts import gTTS
+import threading
 
 
 #####################################################################################
@@ -220,19 +220,19 @@ def answer_daily_question(current_user):
     #! 여기서부터 mp3 파일이 있는 경우.
     #! 1. question으로 QuestionAnswer 객체 생성
     qa = DB.QuestionAnswer(elder_id=elder_id, question=QUESTIONS_CACHE[elder_id][0])
+    db.session.add(qa)
+    db.session.commit()
     
     if file and allowed_file(file.filename):
         #! 2. SER에 입력될 mp3 파일 이름을 QuestionAnswer의 id로 저장
         _, format = file.filename.split('.')
-        filename = f"{qa.id}.{format}"
+        filename = f"{str(qa.id)}.mp3"
         file_path = os.path.join(ANSWER_AUDIO_DIR, filename)
         file.save(file_path)
 
         #! 3. STT & QuestionAnswer 객체에 사용자 답변 text 저장
         answer_text = chat.STT(file_path)
-        
         qa.answer = answer_text
-        db.session.add(qa)
         db.session.commit()
         
         #! 4. GPT 답변 TTS 생성 후 반환 & 질문 삭제
@@ -248,3 +248,24 @@ def answer_daily_question(current_user):
         return jsonify({'error': 'File 없음'}), 400
     else:
         return jsonify({'error': 'File type not allowed'}), 400
+
+
+
+
+@elder.route("/ser", methods=['POST'])
+@login_required
+def ser(current_user):
+    elder_id = current_user.id
+    
+    qas = DB.QuestionAnswer.query.filter(
+        DB.QuestionAnswer.elder_id == elder_id,
+        DB.QuestionAnswer.emotion == None
+    ).all()
+    
+    for qa in qas:
+        file_path = os.path.join(ANSWER_AUDIO_DIR, f"{qa.id}.mp3")
+        qa.emotion = SER(file_path)
+        
+    db.session.commit()
+    
+    return jsonify({"message": "SER 완료."})

@@ -253,7 +253,6 @@ class QuestionAnswer(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     elder_id = db.Column(db.Integer, db.ForeignKey('elder.id'), nullable=False)
-    #guardian_id = db.Column(db.Integer, db.ForeignKey('guardian.id'), nullable=False) #! 여러명의 보호자가 질문한 것 한번에 처리.
     question = db.Column(db.String(256), nullable=False)
     answer = db.Column(db.String(256))
     date = db.Column(Date, nullable=False)

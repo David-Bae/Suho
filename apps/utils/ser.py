@@ -1,5 +1,7 @@
 import numpy as np
 import librosa
+from apps.crud import models as DB
+from apps.app import db
 from tensorflow.keras.models import load_model
 
 def extract_mfcc(filename):
@@ -23,3 +25,13 @@ def SER(mp3_path):
     max_index = result.index(max(result))
     
     return max_index
+
+
+def add_ser_to_db(qa_db: DB.QuestionAnswer, mp3_path):
+    emotion = SER(mp3_path)
+    qa_db.emotion = emotion
+    db.session.add(qa_db)
+    db.session.commit()
+    
+    return
+    
