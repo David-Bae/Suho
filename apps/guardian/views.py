@@ -190,39 +190,16 @@ def add_message(current_user):
 
     return jsonify({'message': '메시지가 추가되었습니다.'}), 200
 
-
-
-
-# test_text1 = '''
-# 박영미님은 현재 다양한 건강 문제와 가족에 대한 그리움을 경험하고 계시는 \
-# 것으로 보입니다. 특히 허리와 다리 통증을 지속적으로 호소하고 있으며, 이는 \
-# 일상생활에 영향을 미칠 수 있는 중요한 문제입니다. 건강에 대한 걱정도 여러 \
-# 차례 언급되었으며, 이는 신체적 불편함뿐만 아니라 정신적인 스트레스로도 \
-# 이어질 수 있습니다. 또한, 박영미님은 손주들과 딸에 대한 강한 애정을 보이\
-# 고 계시며, 이들과의 만남을 갈망하고 있습니다. 정서적인 면에서도 가족과의 \
-# 연결이 박영미님에게 큰 의미가 있는 것으로 판단됩니다.\
-# '''
-# test_text2 = '''
-# 이러한 상황을 고려할 때, 박영미님의 신체적 건강 관리를 위해 정기적인 의료 \
-# 진료를 받으시도록 권장드립니다. 특히, 허리와 다리 통증에 대한 전문적인 평\
-# 가와 치료가 필요할 수 있습니다. 또한, 영양가 있는 음식과 적절한 운동을 통\
-# 해 건강을 유지할 수 있도록 지원해 주세요. 정서적인 측면에서는 가족과의 교\
-# 류를 자주 가질 수 있도록 도움을 주는 것이 좋겠습니다. 가족 방문을 자주 하\
-# 거나, 비디오 통화 등을 통해 손주들과의 교류를 활성화하는 방법을 모색해 보\
-# 는 것도 좋은 방법이 될 것입니다. 이러한 조치들이 박영미님의 삶의 질을 향\
-# 상시키고, 신체적 및 정신적 건강에 긍정적인 영향을 미칠 것입니다.\
-# '''
-
-# @guardian.route("/make-report", methods=['POST'])
-# def make_report():
-#     name = request.json['name']
-#     month = request.json['month']
-#     filename = 1234
-#     args = [name, month, 0, [100,60,100,30], [test_text1, test_text2], filename]
+@guardian.route("/change-main-elder", methods=["POST"])
+@login_required
+def change_main_elder(current_user):
+    elder_id = request.json['elder_id']
     
-#     rp.draw(*args)
-#     rp.pdf2img(filename)
+    guardian = DB.Guardian.query.filter(
+        DB.Guardian.id == current_user.id
+    ).first()
     
+    guardian.main_elder_id = elder_id
+    db.session.commit()
     
-    
-#     return jsonify({"message": "done"}), 200
+    return jsonify({"message": "main 고령자를 변경하였습니다."}), 200
