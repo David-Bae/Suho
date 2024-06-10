@@ -19,7 +19,7 @@ def json_SeniorSetting(user: DB.Elder):
 
 def json_ProtectorSetting(user: DB.Guardian):
     fields = [
-        "id", "name", "completeScheduleAlarm", "fallDetectAlarm", "getReportAlarm"
+        "id", "name", "completeScheduleAlarm", "fallDetectAlarm", "getReportAlarm", "main_elder_id"
     ]
 
     if isinstance(user, DB.Guardian):
