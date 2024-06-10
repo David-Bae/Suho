@@ -19,13 +19,11 @@ def json_SeniorSetting(user: DB.Elder):
 
 def json_ProtectorSetting(user: DB.Guardian):
     fields = [
-        "id", "name", "completeScheduleAlarm", "fallDetectAlarm", "getReportAlarm", "main_elder_id"
+        "id", "name", "completeScheduleAlarm", "fallDetectAlarm", "getReportAlarm",
     ]
 
-    if isinstance(user, DB.Guardian):
-        ProtectorSetting = {field: getattr(user, field) for field in fields}
-    else:
-        ProtectorSetting = {field: None for field in fields}
+    ProtectorSetting = {field: getattr(user, field) for field in fields}
+    ProtectorSetting["mainSeniorId"] = user.main_elder_id
 
     return ProtectorSetting
 
