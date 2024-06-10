@@ -90,14 +90,17 @@ def add_user():
 @login_required
 def update_all(current_user):
     response = {
-        "SeniorSetting": json_SeniorSetting(current_user),
-        "ProtectorSetting": json_ProtectorSetting(current_user),
-        "ProtectorInfo": json_ProtectorInfo(current_user),
-        "SeniorInfo": json_SeniorInfo(current_user),
         "MessageItem": json_MessageItem(current_user),
         "ScheduleItem": json_ScheduleItem(current_user),
         "MedicineAlarmItem": json_MedicineAlarmItem(current_user),
         "MedicineItem": json_MedicineItem(current_user)
     }
+    
+    if isinstance(current_user, DB.Elder):
+        response["SeniorSetting"] = json_SeniorSetting(current_user)
+        response["ProtectorInfo"] = json_ProtectorInfo(current_user)
+    else:
+        response["ProtectorSetting"] = json_ProtectorSetting(current_user)
+        response["SeniorInfo"] = json_SeniorInfo(current_user)
 
     return jsonify(response), 200
