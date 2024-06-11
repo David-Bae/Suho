@@ -42,6 +42,7 @@ class Elder(User):
     update_counseling_type() 함수로 업데이트할 수 있음.
     """
     counseling_type = db.Column(db.Integer, nullable=False)
+    fall_detect = db.Column(db.Boolean, default=False)
 
     #! SeniorSetting
     addScheduleFromProtectorAlarm = db.Column(db.Boolean, default=True)
@@ -61,6 +62,7 @@ class Elder(User):
         super().__init__(phone, password_hash, name, birthdate, gender, residence)
         self.current_location = current_location
         self.counseling_type = 0
+        self.fall_detect = False
 
         #! SeniorSetting
         self.addScheduleFromProtectorAlarm = True

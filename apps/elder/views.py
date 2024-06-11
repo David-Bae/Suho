@@ -167,38 +167,57 @@ def add_schedule_elder(current_user):
     return jsonify({'message': '일정이 추가되었습니다.'})
 
 
-@elder.route("/get-today-todo", methods=['GET'])
+@elder.route("/fall-detection", methods=['POST'])
 @login_required
-def get_today_todo(current_user):
-    elder_id = current_user.id
-    today = datetime.today()
-    year = today.year
-    month = today.month
-    day = today.day
-
-    #! 오늘 먹어야할 약 가져오기
-    medicines = DB.MedicineAlarm.query.filter(
-        DB.MedicineAlarm.elder_id == elder_id,
-        DB.MedicineAlarm.year == year,
-        DB.MedicineAlarm.month == month,
-        DB.MedicineAlarm.day == day
-    ).all()
-
-    #! 오늘 일정 가져오기
-    schedules = DB.Schedule.query.filter(
-        DB.Schedule.elder_id == elder_id,
-        #? 오늘이 시작날 이후
-        (DB.Schedule.start_year < year) |
-        ((DB.Schedule.start_year == year) & (DB.Schedule.start_month < month)) |
-        ((DB.Schedule.start_year == year) & (DB.Schedule.start_month == month) & (DB.Schedule.start_day <= day)),
-        (DB.Schedule.end_year > year) |
-        #? 오늘이 시작날 이전
-        ((DB.Schedule.end_year == year) & (DB.Schedule.end_month > month)) |
-        ((DB.Schedule.end_year == year) & (DB.Schedule.end_month == month) & (DB.Schedule.end_day >= day))
-    ).all()
+def fall_detection_elder(current_user):
+    elder = DB.Elder.query.filter(DB.Elder.id == current_user.id).first()
+    elder.fall_detect = True
+    db.session.commit()
+    
+    return jsonify({"message": "낙상이 감지되었습니다."}), 200
+    
 
 
-    #! JSON 파일로 만들기
 
 
-    #! 반환.
+
+
+
+
+
+
+# @elder.route("/get-today-todo", methods=['GET'])
+# @login_required
+# def get_today_todo(current_user):
+#     elder_id = current_user.id
+#     today = datetime.today()
+#     year = today.year
+#     month = today.month
+#     day = today.day
+
+#     #! 오늘 먹어야할 약 가져오기
+#     medicines = DB.MedicineAlarm.query.filter(
+#         DB.MedicineAlarm.elder_id == elder_id,
+#         DB.MedicineAlarm.year == year,
+#         DB.MedicineAlarm.month == month,
+#         DB.MedicineAlarm.day == day
+#     ).all()
+
+#     #! 오늘 일정 가져오기
+#     schedules = DB.Schedule.query.filter(
+#         DB.Schedule.elder_id == elder_id,
+#         #? 오늘이 시작날 이후
+#         (DB.Schedule.start_year < year) |
+#         ((DB.Schedule.start_year == year) & (DB.Schedule.start_month < month)) |
+#         ((DB.Schedule.start_year == year) & (DB.Schedule.start_month == month) & (DB.Schedule.start_day <= day)),
+#         (DB.Schedule.end_year > year) |
+#         #? 오늘이 시작날 이전
+#         ((DB.Schedule.end_year == year) & (DB.Schedule.end_month > month)) |
+#         ((DB.Schedule.end_year == year) & (DB.Schedule.end_month == month) & (DB.Schedule.end_day >= day))
+#     ).all()
+
+
+#     #! JSON 파일로 만들기
+
+
+#     #! 반환.

@@ -203,3 +203,7 @@ def change_main_elder(current_user):
     db.session.commit()
     
     return jsonify({"message": "main 고령자를 변경하였습니다."}), 200
+
+@guardian.route("/fall-detect", methods=["GET"])
+def fall_detect():
+    return
