@@ -7,6 +7,7 @@ from apps.utils.utils import create_connection_code
 from apps.utils.common import add_medicine, add_schedule
 from apps.utils import report_maker as rp
 import json
+import time
 
 from apps.guardian import guardian_bp as guardian
 
@@ -204,6 +205,19 @@ def change_main_elder(current_user):
     
     return jsonify({"message": "main 고령자를 변경하였습니다."}), 200
 
-@guardian.route("/fall-detect", methods=["GET"])
-def fall_detect():
-    return
+@guardian.route("/fall-detection", methods=["GET"])
+@login_required
+def fall_detection_guardian(current_user):
+    
+    for i in range(300):
+        elder = db.session.query(DB.Elder).filter(DB.Elder.id == current_user.main_elder_id).first()
+        
+        if elder.fall_detect:
+            elder.fall_detect = False
+            db.session.commit()
+            return jsonify({"message": 1}), 200
+        
+        db.session.commit()
+        time.sleep(1)
+
+    return jsonify({"message": 0}), 200
