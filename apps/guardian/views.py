@@ -63,6 +63,7 @@ def get_elder_location(current_user):
         #! 아직 위치가 업데이트되지 않았으면 (0,0) 반환.
         return jsonify({"latitude": 0.0, "longitude": 0.0})
 
+
 @guardian.route("/add-medicine", methods=['POST'])
 @login_required
 def add_medicine_guardian(current_user):
@@ -208,16 +209,24 @@ def change_main_elder(current_user):
 @guardian.route("/fall-detection", methods=["GET"])
 @login_required
 def fall_detection_guardian(current_user):
+    elder = db.session.query(DB.Elder).filter(DB.Elder.id == current_user.main_elder_id).first()
     
-    for i in range(300):
-        elder = db.session.query(DB.Elder).filter(DB.Elder.id == current_user.main_elder_id).first()
-        
-        if elder.fall_detect:
-            elder.fall_detect = False
-            db.session.commit()
-            return jsonify({"message": 1}), 200
-        
+    if elder.fall_detect:
+        elder.fall_detect = False
         db.session.commit()
-        time.sleep(1)
+        return jsonify({"message": 1}), 200
+    else:
+        return jsonify({"message": 0}), 200
+    
+    # for i in range(300):
+        
+        
+    #     if elder.fall_detect:
+    #         elder.fall_detect = False
+    #         db.session.commit()
+    #         return jsonify({"message": 1}), 200
+        
+    #     db.session.commit()
+    #     time.sleep(1)
 
-    return jsonify({"message": 0}), 200
+    # return jsonify({"message": 0}), 200
