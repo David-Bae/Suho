@@ -9,6 +9,8 @@ from apps.utils import chatbot as chat
 from apps.utils.ser import SER, add_ser_to_db
 from gtts import gTTS
 import threading
+import logging
+import sys
 
 
 #####################################################################################
@@ -208,15 +210,13 @@ def answer_daily_question(current_user):
 
     #? 클라이언트로부터 mp3 받기
     if 'file' not in request.files:
-        return jsonify({'error': 'request에 파일이 없습니다.'}), 400
-
-    return jsonify({"debug": "Stop2"}), 200
+        return jsonify({'error': 'request에 파일이 없습니다.'}), 401
 
     #! file = 클라이언트가 업로드한 file object.
     file = request.files['file']
 
     if file.filename == '':
-        return jsonify({'error': 'mp3 파일이 없습니다.'}), 400
+        return jsonify({'error': 'mp3 파일이 없습니다.'}), 404
 
 
     #! 여기서부터 mp3 파일이 있는 경우.
@@ -236,6 +236,8 @@ def answer_daily_question(current_user):
         answer_text = chat.STT(file_path)
         qa.answer = answer_text
         db.session.commit()
+
+        print(f'{answer_text}', file=sys.stderr)
         
         #! 4. GPT 답변 TTS 생성 후 반환 & 질문 삭제
         gpt_tts = chat.AudioChatbot(QUESTIONS_CACHE[elder_id][0], answer_text)        
@@ -244,7 +246,10 @@ def answer_daily_question(current_user):
         
         del QUESTIONS_CACHE[elder_id][0]
 
+
         return send_file(tts_file_path, as_attachment=True, download_name=f"{elder_id}_response.mp3", mimetype="audio/mpeg")
+
+    print('3', file=sys.stderr)
 
     if not file:
         return jsonify({'error': 'File 없음'}), 400
@@ -270,4 +275,4 @@ def ser(current_user):
         
     db.session.commit()
     
-    return jsonify({"message": "SER 완료."})
+    return jsonify({"message": "SER 완료."}), 200

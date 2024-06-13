@@ -59,8 +59,9 @@ answer: {user_answer}
 
     return result.content
 
+emotions = ["화남", "역겨움", "두려움", "행복", "평온", "슬픔"]
 
-def analysisGPT(elder_name, questions, user_answers, date):
+def analysisGPT(elder_name, questions, user_answers, date, ser):
     #! Language Model
     chat = ChatOpenAI(model="gpt-4-turbo-2024-04-09")
 
@@ -69,7 +70,8 @@ def analysisGPT(elder_name, questions, user_answers, date):
         QA += f"<{i+1}번째 질문 & 답변>\n"
         QA += f"Q: {questions[i]}\n"
         QA += f"A: {user_answers[i]}\n"
-        QA += f"답변 날짜: {date[i]}\n\n"
+        QA += f"답변 날짜: {date[i]}\n"
+        QA += f"답변시 감정: {emotions[ser[i]]}\n\n"
 
     #! Prompt
     prompt = PromptTemplate(
@@ -81,8 +83,9 @@ def analysisGPT(elder_name, questions, user_answers, date):
 위 답변을 토대로 {elder_name}님의 상태를 분석해서 {elder_name}님의 보호자에게 보여줄 보고서를 작성해주세요.
 아래의 보고서 작성 지침을 지켜주세요.
 1. 보고서는 2문단으로 작성해주세요.
-2. 보고서의 첫번째 문단에는 보호자에게 {elder_name}님의 현재 상태를 분석하고 상황을 설명하는 내용을 작성해주세요.
-3. 보고서의 두번째 문단에는 {elder_name}님을 위해서 보호자가 어떠한 조치를 취하면 좋을지 추천 또는 제안하세요.
+2. 보고서의 첫번째 문단에는 보호자에게 {elder_name}님의 현재 상태를 분석하고 상황을 설명하는 내용을 4문장으로 작성해주세요.
+2-1 보고서의 첫번쨰 문단에는 {elder_name}님의 답변시 감정이 주로 어땠는지 한 문장 포합시켜주세요.
+3. 보고서의 두번째 문단에는 {elder_name}님을 위해서 보호자가 어떠한 조치를 취하면 좋을지 추천 또는 제안을 4문장으로 작성하세요.
 4-1. '신체 건강' 또는 '정신 건강'을 분석한 결과 {elder_name}님의 상태가 건강하다면 보호자에게 건강한 상태를 알려주기만 하세요.
 4-2. '신체 건강' 또는 '정신 건강'을 분석한 결과 {elder_name}님의 상태가 보통(가끔씩 아프지만 평소에는 괜찮음)이라면 보호자에게 {elder_name}님의 상태를 알려주면서 예방 & 주의를 해주세요.
 4-3. '신체 건강' 또는 '정신 건강'을 분석한 결과 {elder_name}님의 상태가 좋지 않음(매일 아픔)이라면 보호자에게 {elder_name}님의 상태를 알려주면서 병원에서 진료를 받으라는 등 조치를 취하라고 경고하세요.
