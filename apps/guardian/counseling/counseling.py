@@ -1,6 +1,6 @@
 from apps.guardian import guardian_bp as guardian
 from apps.auth.views import login_required
-from flask import request, jsonify, send_file
+from flask import request, jsonify, send_file, send_from_directory
 from apps.crud import models as DB
 from apps.app import db
 from datetime import date
@@ -46,7 +46,8 @@ def get_report(current_user, elder_id, year, month):
     report_filename = f'{elder_id}_{year_month}'
     image_path = os.path.join(rp.REPORT_DIR, f'{report_filename}.png')
     if os.path.exists(image_path):
-        return send_file(image_path, mimetype='image/png'), 200
+        return send_from_directory(rp.REPORT_DIR, f'{report_filename}.png')
+        #return send_file(image_path, mimetype='image/png'), 200
     
     #! GPT 분석
     start_date, end_date = utils.get_date_range(year_month)
@@ -91,6 +92,6 @@ def get_report(current_user, elder_id, year, month):
 
     #! 보고서 반환 (PNG)
     try:
-        return send_file(image_path, mimetype='image/png'), 200
+        return send_from_directory(rp.REPORT_DIR, f'{report_filename}.png')
     except Exception as e:
         return jsonify({"message": str(e)}), 500
