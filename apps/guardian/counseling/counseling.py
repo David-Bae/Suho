@@ -37,9 +37,9 @@ def add_question(current_user):
 
 
 #! Suho 앱의 핵심. (SER 제외 구현)
-@guardian.route("/counseling/make-report/<elder_id>/<year>/<month>", methods=['POST'])
-@login_required
-def get_report(current_user, elder_id, year, month):
+@guardian.route("/counseling/make-report/<elder_id>/<year>/<month>", methods=['GET'])
+#@login_required
+def get_report(elder_id, year, month):
     year_month = utils.format_year_month(year, month)
 
     #! 보고서 파일이 이미 존재하면 바로 반환.
