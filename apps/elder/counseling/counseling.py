@@ -206,9 +206,13 @@ def answer_daily_question(current_user):
     """
     elder_id = current_user.id
 
+    return jsonify({"debug": "Stop1"}), 200
+
     #? 클라이언트로부터 mp3 받기
     if 'file' not in request.files:
         return jsonify({'error': 'request에 파일이 없습니다.'}), 400
+
+    return jsonify({"debug": "Stop2"}), 200
 
     #! file = 클라이언트가 업로드한 file object.
     file = request.files['file']

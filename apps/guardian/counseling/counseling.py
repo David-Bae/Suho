@@ -63,14 +63,16 @@ def get_report(elder_id, year, month):
     questions = []
     answers = []
     qa_date = []
+    ser = []
 
     for qa in results:
         questions.append(qa.question)
         answers.append(qa.answer)
         qa_date.append(qa.date)
+        ser.append(qa.emotion)
 
     elder_name = DB.Elder.query.filter(DB.Elder.id == elder_id).first().name
-    current_status_analysis, care_recommendations = chat.analysisGPT(elder_name, questions, answers, qa_date)
+    current_status_analysis, care_recommendations = chat.analysisGPT(elder_name, questions, answers, qa_date, ser)
 
     #! 정형화된 검사
     scores = []

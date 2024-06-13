@@ -41,8 +41,9 @@ def add_qa():
         question = qa['question']
         answer = qa['answer']
         date = qa['date']
+        ser = qa['ser']
 
-        new_qa = DB.QuestionAnswer(elder_id, question, answer, date)
+        new_qa = DB.QuestionAnswer(elder_id, question, answer, date, ser)
         db.session.add(new_qa)
 
     db.session.commit()
@@ -104,3 +105,23 @@ def update_all(current_user):
         response["SeniorInfo"] = json_SeniorInfo(current_user)
 
     return jsonify(response), 200
+
+
+#! 검사지 점수 추가
+@crud.route("/sudo-add-score", methods=['POST'])
+def add_score():
+    scores = request.json # 여러 개의 질문-답변 쌍을 포함한 리스트
+
+    for score in scores:
+        elder_id = score['elder_id']
+        counseling_type = score['counseling_type']
+        num = score['score']
+        date = score['date']
+        
+
+        new_qa = DB.CounselingScore(elder_id, counseling_type, num, date)
+        db.session.add(new_qa)
+
+    db.session.commit()
+
+    return jsonify({'message': '질문-답변이 추가되었습니다.'}), 200

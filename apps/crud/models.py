@@ -94,11 +94,11 @@ class CounselingScore(db.Model):
     date = db.Column(Date, nullable=False)
     score = db.Column(Float, nullable=False)
 
-    def __init__(self, elder_id, counseling_type, score):
+    def __init__(self, elder_id, counseling_type, score, date=datetime.today()):
         self.elder_id = elder_id
         self.counseling_type = counseling_type
         self.score = score
-        self.date = date.today()
+        self.date = date
 
 
 class MonthlyEvaluation(db.Model):
@@ -261,11 +261,12 @@ class QuestionAnswer(db.Model):
     #! 0:angry, 1:disgust, 2:fear, 3:happy, 4:neutral, 5:sad
     emotion = db.Column(db.Integer)
 
-    def __init__(self, elder_id, question, answer=None, date=datetime.today()):
+    def __init__(self, elder_id, question, answer=None, date=datetime.today(), emotion=0):
         self.elder_id = elder_id
         self.question = question
         self.answer = answer
         self.date = date
+        self.emotion = emotion
 
 class ElderLocation(db.Model):
     """
