@@ -36,15 +36,10 @@ def add_question(current_user):
     return jsonify({'message': '질문이 등록되었습니다.'}), 200
 
 
-
 #! Suho 앱의 핵심. (SER 제외 구현)
-@guardian.route("/counseling/make-report", methods=['POST'])
+@guardian.route("/counseling/make-report/<elder_id>/<year>/<month>", methods=['POST'])
 @login_required
-def make_report(current_user):
-    elder_id = request.json['elder_id']
-    elder_name = DB.Elder.query.filter(DB.Elder.id == elder_id).first().name
-    year = request.json['year']
-    month = request.json['month']
+def get_report(current_user, elder_id, year, month):
     year_month = utils.format_year_month(year, month)
 
     #! 보고서 파일이 이미 존재하면 바로 반환.
@@ -52,7 +47,7 @@ def make_report(current_user):
     image_path = os.path.join(rp.REPORT_DIR, f'{report_filename}.png')
     if os.path.exists(image_path):
         return send_file(image_path, mimetype='image/png'), 200
-
+    
     #! GPT 분석
     start_date, end_date = utils.get_date_range(year_month)
 
@@ -73,6 +68,7 @@ def make_report(current_user):
         answers.append(qa.answer)
         qa_date.append(qa.date)
 
+    elder_name = DB.Elder.query.filter(DB.Elder.id == elder_id).first().name
     current_status_analysis, care_recommendations = chat.analysisGPT(elder_name, questions, answers, qa_date)
 
     #! 정형화된 검사
