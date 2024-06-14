@@ -3,6 +3,7 @@ import librosa
 from apps.crud import models as DB
 from apps.app import db
 from tensorflow.keras.models import load_model
+import sys
 
 def extract_mfcc(filename):
     y, sr = librosa.load(filename, duration=3, offset=0.5)
@@ -22,6 +23,7 @@ def SER(mp3_path):
     mfcc = np.expand_dims(mfcc, -1)
     label = ["angry", "disgust", "fear", "happy", "neutral", "sad"]
     result = model.predict(mfcc)[0].tolist()
+    print(f"{result}", file=sys.stderr)
     max_index = result.index(max(result))
     
     return max_index

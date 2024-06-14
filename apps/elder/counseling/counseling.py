@@ -11,6 +11,7 @@ from gtts import gTTS
 import threading
 import logging
 import sys
+from sqlalchemy import desc
 
 
 #####################################################################################
@@ -228,6 +229,7 @@ def answer_daily_question(current_user):
     if file and allowed_file(file.filename):
         #! 2. SER에 입력될 mp3 파일 이름을 QuestionAnswer의 id로 저장
         _, format = file.filename.split('.')
+        qa = DB.QuestionAnswer.query.order_by(desc(DB.QuestionAnswer.id)).first()
         filename = f"{str(qa.id)}.mp3"
         file_path = os.path.join(ANSWER_AUDIO_DIR, filename)
         file.save(file_path)
@@ -266,11 +268,14 @@ def ser(current_user):
     
     qas = DB.QuestionAnswer.query.filter(
         DB.QuestionAnswer.elder_id == elder_id,
-        DB.QuestionAnswer.emotion == None
+        DB.QuestionAnswer.emotion == -1
     ).all()
     
+    print(f"{len(qas)}", file=sys.stderr)
+
     for qa in qas:
         file_path = os.path.join(ANSWER_AUDIO_DIR, f"{qa.id}.mp3")
+        print(f"{file_path}", file=sys.stderr)
         qa.emotion = SER(file_path)
         
     db.session.commit()

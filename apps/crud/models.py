@@ -261,7 +261,7 @@ class QuestionAnswer(db.Model):
     #! 0:angry, 1:disgust, 2:fear, 3:happy, 4:neutral, 5:sad
     emotion = db.Column(db.Integer)
 
-    def __init__(self, elder_id, question, answer=None, date=datetime.today(), emotion=0):
+    def __init__(self, elder_id, question, answer=None, date=datetime.today(), emotion=-1):
         self.elder_id = elder_id
         self.question = question
         self.answer = answer
@@ -276,8 +276,8 @@ class ElderLocation(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     elder_id = db.Column(db.Integer, db.ForeignKey('elder.id'), nullable=False)
-    latitude = db.Column(db.Float, nullable=False)
-    longitude = db.Column(db.Float, nullable=False)
+    latitude = db.Column(db.Double, nullable=False)
+    longitude = db.Column(db.Double, nullable=False)
 
     def __init__(self, elder_id, latitude, longitude):
         self.elder_id = elder_id

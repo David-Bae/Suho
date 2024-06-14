@@ -8,6 +8,7 @@ from apps.utils.common import add_medicine, add_schedule
 from apps.utils import report_maker as rp
 import json
 import time
+import sys
 
 from apps.guardian import guardian_bp as guardian
 
@@ -171,9 +172,6 @@ def add_message(current_user):
     minute = request.json.get('minute')
     content = request.json.get('content')
     alarm_type = request.json.get('alarm_type')
-
-    if not all([elder_id, title, year, month, day, hour, minute, content, alarm_type is not None]):
-        return jsonify({'message': '데이터가 부족합니다.'}), 400
 
     new_message = DB.Message(
         elder_id=elder_id,
